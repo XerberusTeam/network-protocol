@@ -1,0 +1,50 @@
+[package]
+name = "pallet-rr-feed"
+version = "0.1.0"
+authors = ["Parity Technologies <admin@parity.io>"]
+edition = "2018"
+license = "Apache-2.0"
+homepage = "https://substrate.dev"
+repository = "https://github.com/paritytech/substrate/"
+description = "chainlink price feed pallet"
+readme = "README.md"
+
+[package.metadata.docs.rs]
+targets = ["x86_64-unknown-linux-gnu"]
+
+[dependencies]
+serde = { version = "1.0.125", optional = true, features = ["derive"] }
+codec = { package = "parity-scale-codec", version = "2.0.1", features = ['derive'], default-features = false }
+sp-arithmetic = { git = 'https://github.com/paritytech/substrate.git', branch = 'master', default-features = false }
+sp-std = { git = 'https://github.com/paritytech/substrate.git', branch = 'master', default-features = false }
+sp-core = { git = 'https://github.com/paritytech/substrate.git', branch = 'master', default-features = false }
+# Needed for various traits. In our case, `OnFinalize`.
+sp-runtime = { git = 'https://github.com/paritytech/substrate.git', branch = 'master', default-features = false }
+# Needed for type-safe access to storage DB.
+frame-support = { default-features = false, git = 'https://github.com/paritytech/substrate.git', branch = 'master'}
+# `system` module provides us with all sorts of useful stuff and macros depend on it being around.
+frame-system = { git = 'https://github.com/paritytech/substrate.git', branch = 'master', default-features = false }
+frame-benchmarking = { default-features = false, git = 'https://github.com/paritytech/substrate.git', branch = 'master', optional = true }
+
+[dev-dependencies]
+sp-std = { git = 'https://github.com/paritytech/substrate.git', branch = 'master' }
+sp-io = { git = 'https://github.com/paritytech/substrate.git', branch = 'master' }
+pallet-balances = { git = 'https://github.com/paritytech/substrate.git', branch = 'master' }
+
+[features]
+default = ["std"]
+std = [
+    "serde",
+    "codec/std",
+    "sp-std/std",
+    "sp-core/std",
+    "sp-runtime/std",
+    "frame-support/std",
+    "frame-system/std",
+    "frame-benchmarking/std",
+]
+runtime-benchmarks = [
+    "frame-benchmarking",
+    "sp-runtime/runtime-benchmarks",
+    "frame-system/runtime-benchmarks",
+]

@@ -42,7 +42,9 @@ pub use sp_runtime::BuildStorage;
 pub use sp_runtime::{Perbill, Permill};
 
 /// Import the template pallet.
-pub use pallet_template;
+// pub use pallet_template;
+pub use pallet_risk_ratings;
+// pub use pallet_rr_feed;
 
 /// An index to a block.
 pub type BlockNumber = u32;
@@ -246,10 +248,31 @@ impl pallet_sudo::Config for Runtime {
 }
 
 /// Configure the pallet-template in pallets/template.
-impl pallet_template::Config for Runtime {
+impl pallet_risk_ratings::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
-	type WeightInfo = pallet_template::weights::SubstrateWeight<Runtime>;
+	type WeightInfo = pallet_risk_ratings::weights::SubstrateWeight<Runtime>;
 }
+
+// Add the chainlink Config Trait
+// impl pallet_risk_ratings::Config for Runtime {
+// 	type Event = Event;
+// 	type Currency = balances::Module<Runtime>;
+// 	type Callback = example_module::Call<Runtime>;
+// 	type ValidityPeriod = ValidityPeriod;
+// }
+
+// impl pallet_risk_ratings::Config for Runtime {
+// 	type AuthorityId = pallet_aura::sr25519::AuthorityId;
+// 	type RuntimeEvent = RuntimeEvent;
+// 	type GracePeriod = ConstU32<5>;
+// 	type UnsignedInterval = ConstU32<5>;
+// 	type UnsignedPriority = ConstU64<1>;
+// 	type MaxPrices = ConstU32<5>;
+// }
+
+// parameter_types! {
+// 	pub const ValidityPeriod: u32 = 50;
+// }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
 #[frame_support::runtime]
@@ -289,9 +312,12 @@ mod runtime {
 	#[runtime::pallet_index(6)]
 	pub type Sudo = pallet_sudo;
 
-	// Include the custom logic from the pallet-template in the runtime.
+	// // Include the custom logic from the pallet-template in the runtime.
+	// #[runtime::pallet_index(7)]
+	// pub type TemplateModule = pallet_template;
+
 	#[runtime::pallet_index(7)]
-	pub type TemplateModule = pallet_template;
+	pub type RiskRatings = pallet_risk_ratings;
 }
 
 /// The address format for describing accounts.
@@ -341,7 +367,8 @@ mod benches {
 		[pallet_balances, Balances]
 		[pallet_timestamp, Timestamp]
 		[pallet_sudo, Sudo]
-		[pallet_template, TemplateModule]
+		// [pallet_template, TemplateModule]
+		[pallet_risk_ratings, RiskRatings]
 	);
 }
 

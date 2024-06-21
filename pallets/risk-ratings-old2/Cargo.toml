@@ -1,0 +1,60 @@
+[package]
+name = "pallet-risk-ratings"
+version = "0.1.0"
+authors.workspace = true
+edition.workspace = true
+repository.workspace = true
+
+[lints]
+workspace = true
+
+[package.metadata.docs.rs]
+targets = ["x86_64-unknown-linux-gnu"]
+
+[dependencies]
+lite-json = { version = "0.2.0", default-features = false }
+serde = { version = "1.0.125", optional = true }
+serde_json = "1.0"
+codec = { package = "parity-scale-codec", version = "3.6.1", default-features = false }
+log = { version = "0.4.21", default-features = false }
+scale-info = { version = "2.11.1", default-features = false, features = ["derive"] }
+# rand = { version = "0.8.5", features = ["wasm-bindgen", "js"] }
+
+# frame deps
+frame-benchmarking = { git = "https://github.com/paritytech/polkadot-sdk.git", tag = "release-polkadot-v1.10.1", default-features = false, optional = true }
+frame-support = { git = "https://github.com/paritytech/polkadot-sdk.git", tag = "release-polkadot-v1.10.1", default-features = false }
+frame-system = { git = "https://github.com/paritytech/polkadot-sdk.git", tag = "release-polkadot-v1.10.1", default-features = false }
+
+sp-core = { git = "https://github.com/paritytech/polkadot-sdk.git", tag = "release-polkadot-v1.10.1" }
+sp-io = { git = "https://github.com/paritytech/polkadot-sdk.git", tag = "release-polkadot-v1.10.1" }
+sp-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", tag = "release-polkadot-v1.10.1" }
+sp-std = { git = "https://github.com/paritytech/polkadot-sdk.git", tag = "release-polkadot-v1.10.1", default-features = false }
+sp-keystore = { git = "https://github.com/paritytech/polkadot-sdk.git", tag = "release-polkadot-v1.10.1", optional = true }
+
+# sp-core = { git = "https://github.com/paritytech/polkadot-sdk.git", tag = "release-polkadot-v1.10.1", default-features = false }
+# sp-io = { git = "https://github.com/paritytech/polkadot-sdk.git", tag = "release-polkadot-v1.10.1", default-features = false }
+# sp-keystore = { git = "https://github.com/paritytech/polkadot-sdk.git", tag = "release-polkadot-v1.10.1", optional = true }
+# sp-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", tag = "release-polkadot-v1.10.1", default-features = false }
+# sp-std = { git = "https://github.com/paritytech/polkadot-sdk.git", tag = "release-polkadot-v1.10.1", default-features = false }
+
+[features]
+default = ["std"]
+std = [
+    "serde",
+	"codec/std",
+	"frame-support/std",
+	"frame-system/std",
+	"lite-json/std",
+	"log/std",
+	"scale-info/std",
+	"sp-core/std",
+	"sp-io/std",
+	"sp-keystore/std",
+	"sp-runtime/std",
+	"sp-std/std",
+]
+try-runtime = [
+	"frame-support/try-runtime",
+	"frame-system/try-runtime",
+	"sp-runtime/try-runtime",
+]
