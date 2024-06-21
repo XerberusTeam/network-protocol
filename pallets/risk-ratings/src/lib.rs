@@ -1,41 +1,3 @@
-//! # Template Pallet
-//!
-//! A pallet with minimal functionality to help developers understand the essential components of
-//! writing a FRAME pallet. It is typically used in beginner tutorials or in Substrate template
-//! nodes as a starting point for creating a new pallet and **not meant to be used in production**.
-//!
-//! ## Overview
-//!
-//! This template pallet contains basic examples of:
-//! - declaring a storage item that stores a single `u32` value
-//! - declaring and using events
-//! - declaring and using errors
-//! - a dispatchable function that allows a user to set a new value to storage and emits an event
-//!   upon success
-//! - another dispatchable function that causes a custom error to be thrown
-//!
-//! Each pallet section is annotated with an attribute using the `#[pallet::...]` procedural macro.
-//! This macro generates the necessary code for a pallet to be aggregated into a FRAME runtime.
-//!
-//! Learn more about FRAME macros [here](https://docs.substrate.io/reference/frame-macros/).
-//!
-//! ### Pallet Sections
-//!
-//! The pallet sections in this template are:
-//!
-//! - A **configuration trait** that defines the types and parameters which the pallet depends on
-//!   (denoted by the `#[pallet::config]` attribute). See: [`Config`].
-//! - A **means to store pallet-specific data** (denoted by the `#[pallet::storage]` attribute).
-//!   See: [`storage_types`].
-//! - A **declaration of the events** this pallet emits (denoted by the `#[pallet::event]`
-//!   attribute). See: [`Event`].
-//! - A **declaration of the errors** that this pallet can throw (denoted by the `#[pallet::error]`
-//!   attribute). See: [`Error`].
-//! - A **set of dispatchable functions** that define the pallet's functionality (denoted by the
-//!   `#[pallet::call]` attribute). See: [`dispatchables`].
-//!
-//! Run `cargo doc --package pallet-template --open` to view this pallet's documentation.
-
 // We make sure this pallet uses `no_std` for compiling to Wasm.
 #![cfg_attr(not(feature = "std"), no_std)]
 
@@ -93,6 +55,19 @@ pub mod pallet {
 	#[pallet::storage]
 	pub type Something<T> = StorageValue<_, u32>;
 
+	#[pallet::storage]
+	#[pallet::getter(fn risk_ratings)]
+	pub type RiskRatings<T: Config> = StorageNMap<
+		_,
+		(
+			NMapKey<Blake2_128Concat, T::AccountId>, // User Account
+			NMapKey<Blake2_128Concat, u32>,          // shardId
+			NMapKey<Blake2_128Concat, u32>,          // ChainId
+			NMapKey<Blake2_128Concat, u32>,          // Token
+		),
+		u32, // Risk Rating Value
+	>;
+
 	/// Events that functions in this pallet can emit.
 	///
 	/// Events are a simple means of indicating to the outside world (such as dApps, chain explorers
@@ -112,6 +87,20 @@ pub mod pallet {
 			something: u32,
 			/// The account who set the new value.
 			who: T::AccountId,
+		},
+
+		/// A risk rating has been successfully set.
+		RiskRatingSet {
+			/// The user account.
+			account: T::AccountId,
+			/// The shard ID.
+			shard_id: u32,
+			/// The chain ID.
+			chain_id: u32,
+			/// The token.
+			token: u32,
+			/// The new risk rating value.
+			risk_rating: u32,
 		},
 	}
 
@@ -166,37 +155,45 @@ pub mod pallet {
 			Ok(())
 		}
 
-		/// An example dispatchable that may throw a custom error.
-		///
-		/// It checks that the caller is a signed origin and reads the current value from the
-		/// `Something` storage item. If a current value exists, it is incremented by 1 and then
-		/// written back to storage.
-		///
-		/// ## Errors
-		///
-		/// The function will return an error under the following conditions:
-		///
-		/// - If no value has been set ([`Error::NoneValue`])
-		/// - If incrementing the value in storage causes an arithmetic overflow
-		///   ([`Error::StorageOverflow`])
 		#[pallet::call_index(1)]
-		#[pallet::weight(T::WeightInfo::cause_error())]
-		pub fn cause_error(origin: OriginFor<T>) -> DispatchResult {
-			let _who = ensure_signed(origin)?;
+		#[pallet::weight(T::WeightInfo::set_risk_rating())]
+		pub fn set_risk_rating(
+			origin: OriginFor<T>,
+			shard_id: u32,
+			chain_id: u32,
+			token: u32,
+			risk_rating: u32,
+		) -> DispatchResult {
+			// Check that the extrinsic was signed and get the signer.
+			let who = ensure_signed(origin)?;
 
-			// Read a value from storage.
-			match Something::<T>::get() {
-				// Return an error if the value has not been set.
-				None => Err(Error::<T>::NoneValue.into()),
-				Some(old) => {
-					// Increment the value read from storage. This will cause an error in the event
-					// of overflow.
-					let new = old.checked_add(1).ok_or(Error::<T>::StorageOverflow)?;
-					// Update the value in storage with the incremented result.
-					Something::<T>::put(new);
-					Ok(())
-				},
-			}
+			// Update storage.
+			RiskRatings::<T>::insert(
+				(&who, shard_id, chain_id, token),
+				risk_rating,
+			);
+
+			// Emit an event.
+			Self::deposit_event(Event::RiskRatingSet {
+				account: who,
+				shard_id,
+				chain_id,
+				token,
+				risk_rating,
+			});
+
+			// Return a successful `DispatchResult`
+			Ok(())
 		}
 	}
 }
+
+// pub trait WeightInfo {
+// 	fn set_risk_rating() -> Weight;
+// }
+
+// impl WeightInfo for () {
+// 	fn set_risk_rating() -> Weight {
+// 		10_000 // Placeholder weight value
+// 	}
+// }
