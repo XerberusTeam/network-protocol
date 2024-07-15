@@ -53,7 +53,20 @@ pub mod pallet {
 			NMapKey<Blake2_128Concat, T::AccountId>, // User Account
 			NMapKey<Blake2_128Concat, u32>,          // shardId
 			NMapKey<Blake2_128Concat, u32>,          // ChainId
+			NMapKey<Blake2_128Concat, u32>,          // BlockId
 			NMapKey<Blake2_128Concat, u32>,          // Token
+			NMapKey<Blake2_128Concat, u32>,          // Model Hash
+		),
+		u32, // Risk Rating Value
+	>;
+
+	#[pallet::storage]
+	#[pallet::getter(fn latest_risk_ratings)]
+	pub type LatestRiskRatings<T: Config> = StorageNMap<
+		_,
+		(
+			NMapKey<Blake2_128Concat, u32>, // ChainId
+			NMapKey<Blake2_128Concat, u32>, // Token
 		),
 		u32, // Risk Rating Value
 	>;
@@ -87,8 +100,12 @@ pub mod pallet {
 			shard_id: u32,
 			/// The chain ID.
 			chain_id: u32,
+			/// The Block ID.
+			block_id: u32,
 			/// The token.
 			token: u32,
+			/// The Model Hash.
+			model_hash: u32,
 			/// The new risk rating value.
 			risk_rating: u32,
 		},
@@ -151,7 +168,9 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			shard_id: u32,
 			chain_id: u32,
+			block_id: u32,
 			token: u32,
+			model_hash: u32,
 			risk_rating: u32,
 		) -> DispatchResult {
 			// Check that the extrinsic was signed and get the signer.
@@ -159,16 +178,21 @@ pub mod pallet {
 
 			// Update storage.
 			RiskRatings::<T>::insert(
-				(&who, shard_id, chain_id, token),
+				(&who, shard_id, chain_id, block_id, token, model_hash),
 				risk_rating,
 			);
+
+			// Update latest risk ratings.
+			LatestRiskRatings::<T>::insert((chain_id, token), risk_rating);
 
 			// Emit an event.
 			Self::deposit_event(Event::RiskRatingSet {
 				account: who,
 				shard_id,
 				chain_id,
+				block_id,
 				token,
+				model_hash,
 				risk_rating,
 			});
 

@@ -15,22 +15,50 @@ function Main(props) {
   const [formValue, setFormValue] = useState(0)
 
   useEffect(() => {
-    let unsubscribe;
-    api.query.riskRatings
-      .something(newValue => {
-        // The storage value is an Option<u32>
-        // So we have to check whether it is None first
-        // There is also unwrapOr
-        if (newValue.isNone) {
+    let unsubscribe
+    ;(async () => {
+      try {
+        debugger // eslint-disable-line
+        // const something = await api.query.riskRatings.something()
+        const riskRatings = await api.query.riskRatings.latestRiskRatings(1, 1)
+
+        debugger // eslint-disable-line
+
+        if (riskRatings.isNone) {
+          debugger // eslint-disable-line
           setCurrentValue('<None>')
         } else {
-          setCurrentValue(newValue.unwrap().toNumber())
+          debugger // eslint-disable-line
+          setCurrentValue(riskRatings.unwrap().toNumber())
         }
-      })
-      .then(unsub => {
-        unsubscribe = unsub
-      })
-      .catch(console.error)
+
+        // console.log('something', something) // eslint-disable-line
+        // console.log('riskRatings', riskRatings) // eslint-disable-line
+
+        // setCurrentValue(riskRatings.unwrap().toNumber())
+      } catch (error) {
+        debugger // eslint-disable-line
+        console.error('Error:', error)
+      }
+    })()
+
+    // .something(newValue => {
+    //   debugger // eslint-disable-line
+    //   // The storage value is an Option<u32>
+    //   // So we have to check whether it is None first
+    //   // There is also unwrapOr
+    //   if (newValue.isNone) {
+    //     debugger // eslint-disable-line
+    //     setCurrentValue('<None>')
+    //   } else {
+    //     debugger // eslint-disable-line
+    //     setCurrentValue(newValue.unwrap().toNumber())
+    //   }
+    // })
+    // .then(unsub => {
+    //   unsubscribe = unsub
+    // })
+    // .catch(console.error)
 
     return () => unsubscribe && unsubscribe()
   }, [api.query.riskRatings])
@@ -73,7 +101,7 @@ function Main(props) {
 
 export default function RiskRatings(props) {
   const { api } = useSubstrateState()
-  return api.query.riskRatings && api.query.riskRatings.something ? (
+  return api.query.riskRatings && api.query.riskRatings.latestRiskRatings ? (
     <Main {...props} />
   ) : null
 }
