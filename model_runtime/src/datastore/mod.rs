@@ -3,7 +3,7 @@ use arrow::record_batch::RecordBatch;
 use async_trait::async_trait;
 
 #[async_trait]
-pub trait Storage {
+pub trait Datastore {
 	async fn save(&self, data: RecordBatch) -> Result<()>;
 }
 

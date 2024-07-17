@@ -12,7 +12,3 @@ pub trait DataSource {
 		date: chrono::NaiveDate,
 	) -> Result<RecordBatch>;
 }
-
-pub mod duckdb;
-
-pub use duckdb::DuckDBDataSource;

@@ -1,33 +1,32 @@
 mod datasource;
+mod datastore;
 mod models;
-mod storage;
 
 use anyhow::Result;
 use chrono::{NaiveDate, NaiveDateTime};
-use datasource::{DataSource, DuckDBDataSource};
+use datasource::DataSource;
+use datastore::{Datastore, DuckDBStorage};
 use models::{EmissionsModel, LedgerModel, NetworkModel};
 use polars::prelude::*;
-use storage::{DuckDBStorage, Storage};
 
 #[tokio::main]
 async fn main() -> Result<()> {
 	let asset_id = 26;
-	let duck_data_source = DuckDBDataSource::new("xerberus.db")?;
 	let ledger_model = LedgerModel::new();
 	let network_model = NetworkModel::new();
 	let emissions_model = EmissionsModel::new(0.01);
-	let storage = DuckDBStorage::new("results.db")?;
+	let duck_data = DuckDBStorage::new("xerberus.db")?;
 
-	let dates = duck_data_source.get_time_vec(asset_id).await?;
+	let dates = duck_data.get_time_vec(asset_id).await?;
 
 	for date in dates {
-		let ledger = duck_data_source.get_ledger(asset_id, date).await?;
+		let ledger = duck_data.get_ledger(asset_id, date).await?;
 
-		storage.save(ledger).await?;
+		duck_data.save(ledger).await?;
 
 		// let processed_ledger = ledger_model.process(ledger).await?;
 
-		// let relation_network = duck_data_source.get_relation_network(asset_id, date).await?;
+		// let relation_network = duck_data.get_relation_network(asset_id, date).await?;
 		// let processed_network = network_model.process(relation_network).await?;
 
 		// let emissions = emissions_model.process(processed_ledger).await?;
