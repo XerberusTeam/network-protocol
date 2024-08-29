@@ -1,0 +1,15 @@
+version: "3.2"
+
+services:
+  dev:
+    container_name: local-dev
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "9930:9930"
+      - "9333:9333"
+      - "9944:9944"
+      - "30333:30333"
+      - "30334:30334"
+    command: "--dev --rpc-external --detailed-log-output"

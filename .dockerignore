@@ -1,0 +1,63 @@
+# Rust-specific ignores
+target/
+**/*.rs.bk
+# Cargo.lock
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Git and version control
+.git/
+.gitignore
+.gitattributes
+
+# Documentation
+*.md
+LICENSE
+AUTHORS
+
+# Build and CI/CD related
+scripts/
+ci/
+.travis.yml
+.gitlab-ci.yml
+.github/
+
+# Docker-related
+Dockerfile
+.dockerignore
+
+# Substrate and Polkadot specific
+node_modules/
+.wasm-binaries/
+.cargo/
+.local/
+
+# Logs and temporary files
+*.log
+tmp/
+temp/
+
+# Test files
+tests/
+benchmarks/
+
+# Configuration files
+# *.toml
+# *.yaml
+# *.yml
+# !Cargo.toml
+
+# Other unnecessary files
+*.txt
+*.csv
+*.json
+!package.json
+
+# OS-specific files
+.DS_Store
+Thumbs.db

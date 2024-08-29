@@ -6,7 +6,7 @@ license = "MIT-0"
 homepage = "https://substrate.io"
 
 [workspace]
-members = [ "model_runtime",
+members = [
 	"node",
 	# "pallets/template",
 	"pallets/risk-ratings",

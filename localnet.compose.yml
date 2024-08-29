@@ -1,0 +1,51 @@
+version: "3.2"
+
+services:
+  bootnode:
+    container_name: local-bootnode
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "9615:9615"
+      - "9930:9930"
+      - "9333:9333"
+      - "9944:9944"
+      - "30333:30333"
+      - "30334:30334"
+    command: |
+      --alice
+    networks:
+      network:
+        ipv4_address: 10.0.0.5
+
+
+  peer-1:
+    container_name: local-peer-1
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: |
+      --bootnodes /ip4/10.0.0.5/tcp/30333/p2p/12D3KooWEyoppNCUx8Yx66oV9fJnriXwCcXwDDUA2kj6vnc6iDEp
+    networks:
+      network:
+        ipv4_address: 10.0.0.6
+
+  peer-2:
+    container_name: local-peer-2
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: |
+      --bootnodes /ip4/10.0.0.5/tcp/30333/p2p/12D3KooWEyoppNCUx8Yx66oV9fJnriXwCcXwDDUA2kj6vnc6iDEp
+    networks:
+      network:
+        ipv4_address: 10.0.0.7
+
+networks:
+  network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.0.0.0/16
+          gateway: 10.0.0.1
