@@ -43,7 +43,7 @@ RUN apt-get update && \
 RUN  useradd -m -u 1000 -U -s /bin/sh -d /polkadot polkadot && \
 	mkdir -p /data /polkadot/.local/share && \
 	chown -R polkadot:polkadot /data && \
-	ln -s /data /polkadot/.local/share/node-template
+	ln -s /data /polkadot/.local/share/xerberus-net
 
 USER polkadot
 
@@ -51,9 +51,9 @@ USER polkadot
 COPY --chown=polkadot:polkadot --chmod=774 --from=builder /usr/src/target/release/ /usr/bin/
 
 # check if executable works in this container
-RUN /usr/bin/node-template --version
+RUN /usr/bin/xerberus-net --version
 
 # ws_port
 EXPOSE 9930 9333 9944 30333 30334
 
-ENTRYPOINT ["/usr/bin/node-template"]
+ENTRYPOINT ["/usr/bin/xerberus-net"]

@@ -1,7 +1,7 @@
 [workspace.package]
 authors = ["Substrate DevHub <https://github.com/substrate-developer-hub>"]
 edition = "2021"
-repository = "https://github.com/substrate-developer-hub/substrate-node-template/"
+repository = "https://github.com/substrate-developer-hub/substrate-xerberus-net/"
 license = "MIT-0"
 homepage = "https://substrate.io"
 

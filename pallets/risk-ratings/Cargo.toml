@@ -23,15 +23,15 @@ scale-info = { version = "2.10.0", default-features = false, features = [
 ] }
 
 # frame deps
-frame-benchmarking = { git = "https://github.com/paritytech/polkadot-sdk.git", tag = "release-polkadot-v1.10.1", default-features = false, optional = true }
-frame-support = { git = "https://github.com/paritytech/polkadot-sdk.git", tag = "release-polkadot-v1.10.1", default-features = false }
-frame-system = { git = "https://github.com/paritytech/polkadot-sdk.git", tag = "release-polkadot-v1.10.1", default-features = false }
+frame-benchmarking = { git = "https://github.com/paritytech/polkadot-sdk.git", tag = "polkadot-parachain-v1.10.1", default-features = false, optional = true }
+frame-support = { git = "https://github.com/paritytech/polkadot-sdk.git", tag = "polkadot-parachain-v1.10.1", default-features = false }
+frame-system = { git = "https://github.com/paritytech/polkadot-sdk.git", tag = "polkadot-parachain-v1.10.1", default-features = false }
 
 [dev-dependencies]
-sp-core = { git = "https://github.com/paritytech/polkadot-sdk.git", tag = "release-polkadot-v1.10.1" }
-sp-io = { git = "https://github.com/paritytech/polkadot-sdk.git", tag = "release-polkadot-v1.10.1" }
-sp-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", tag = "release-polkadot-v1.10.1" }
-sp-std = { git = "https://github.com/paritytech/polkadot-sdk.git", tag = "release-polkadot-v1.10.1" }
+sp-core = { git = "https://github.com/paritytech/polkadot-sdk.git", tag = "polkadot-parachain-v1.10.1" }
+sp-io = { git = "https://github.com/paritytech/polkadot-sdk.git", tag = "polkadot-parachain-v1.10.1" }
+sp-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", tag = "polkadot-parachain-v1.10.1" }
+sp-std = { git = "https://github.com/paritytech/polkadot-sdk.git", tag = "polkadot-parachain-v1.10.1" }
 
 [features]
 default = ["std"]
