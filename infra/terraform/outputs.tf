@@ -52,3 +52,8 @@ output "firewall_rule_name" {
   description = "Name of the firewall rule allowing IAP SSH access"
   value       = google_compute_firewall.allow_iap_ssh.name
 }
+
+output "polkadot_node_public_ips" {
+  description = "Public IP addresses of the Polkadot node instances"
+  value       = google_compute_address.static_ip[*].address
+}

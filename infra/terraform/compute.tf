@@ -35,14 +35,14 @@ resource "google_compute_instance" "multiple" {
     startup-script = file("start-up-script.sh")
   }
 
-  tags = ["allow-iap-ssh"]
+  tags = ["allow-iap-ssh", "allow-protocol"]
 
   network_interface {
     # network = "default"
     network    = google_compute_network.this.self_link
     subnetwork = google_compute_subnetwork.this.self_link
     access_config {
-      // Ephemeral IP
+      nat_ip = google_compute_address.static_ip[count.index].address
     }
   }
 
