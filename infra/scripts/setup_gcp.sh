@@ -18,98 +18,51 @@ fi
 
 PROJECT_ID="$1"
 USER_EMAIL="$2"
-CLOUDSDK_COMPUTE_REGION="${CLOUDSDK_COMPUTE_REGION:-EUROPE-WEST2}"
-TF_STATE_BUCKET="${TF_STATE_BUCKET:-terraform-state-$PROJECT_ID}"
+CLOUDSDK_COMPUTE_REGION="${CLOUDSDK_COMPUTE_REGION:-europe-west2}"
+TF_STATE_BUCKET="${TF_STATE_BUCKET:-tf-state-$PROJECT_ID}"
 
 set_project() {
-	gcloud config set project "$PROJECT_ID"
-	if [ $? -ne 0 ]; then
-		echo "Failed to set project $PROJECT_ID"
-		exit 1
-	else
-		echo "Successfully set project $PROJECT_ID"
-	fi
+    gcloud config set project "$PROJECT_ID"
 }
 
 enable_api() {
-  local api=$1
-  gcloud services enable "$api" --project="$PROJECT_ID"
-  if [ $? -ne 0 ]; then
-    echo "Failed to enable API $api for project $PROJECT_ID"
-    exit 1
-  else
-    echo "Successfully enabled API $api for project $PROJECT_ID"
-  fi
+    gcloud services enable "$1" --project="$PROJECT_ID"
 }
 
-# Create GCS bucket if it doesn't exist
 create_gcs_bucket() {
-  local bucket_name=$1
-  if ! gsutil ls -p "$PROJECT_ID" | grep -q "gs://$bucket_name/"; then
-    gsutil mb -p "$PROJECT_ID" -l "$CLOUDSDK_COMPUTE_REGION" "gs://$bucket_name"
-    if [ $? -ne 0 ]; then
-      echo "Failed to create GCS bucket $bucket_name"
-      exit 1
-    else
-      echo "Successfully created GCS bucket $bucket_name"
-    fi
-  else
-    echo "GCS bucket $bucket_name already exists"
-  fi
+    gsutil mb -p "$PROJECT_ID" -l "$CLOUDSDK_COMPUTE_REGION" "gs://$1" || true
 }
 
-# Add IAM policy binding to a specific GCS bucket
-add_iam_policy_binding_gcs_bucket() {
-  local role=$1
-  local bucket_name=$2
-  gsutil iam ch "user:$USER_EMAIL:$role" "gs://$bucket_name"
-  if [ $? -ne 0 ]; then
-    echo "Failed to add role $role to $USER_EMAIL on GCS bucket $bucket_name"
-    exit 1
-  else
-    echo "Successfully added role $role to $USER_EMAIL on GCS bucket $bucket_name"
-  fi
-}
-
-# Add IAM policy binding
 add_iam_policy_binding() {
-  local role=$1
-  gcloud projects add-iam-policy-binding "$PROJECT_ID" \
-      --member="user:$USER_EMAIL" \
-      --role="$role"
-  if [ $? -ne 0 ]; then
-    echo "Failed to add role $role to $USER_EMAIL"
-    exit 1
-  else
-    echo "Successfully added role $role to $USER_EMAIL"
-  fi
+    gcloud projects add-iam-policy-binding "$PROJECT_ID" \
+        --member="user:$USER_EMAIL" \
+        --role="$1"
+}
+
+add_iam_policy_binding_gcs_bucket() {
+    gsutil iam ch "user:$USER_EMAIL:$1" "gs://$2"
 }
 
 # Set project
-set_project "$PROJECT_ID"
+set_project
 
-# Assign roles
-add_iam_policy_binding "roles/serviceusage.serviceUsageAdmin"
-add_iam_policy_binding "roles/iam.serviceAccountAdmin"
-add_iam_policy_binding "roles/storage.admin"
-add_iam_policy_binding "roles/artifactregistry.admin"
-add_iam_policy_binding "roles/monitoring.viewer"
-add_iam_policy_binding "roles/secretmanager.admin"
-add_iam_policy_binding "roles/bigquery.admin"
-add_iam_policy_binding "roles/bigquery.jobUser"
-add_iam_policy_binding "roles/compute.networkAdmin"
+# Assign necessary roles
 add_iam_policy_binding "roles/compute.admin"
-add_iam_policy_binding "roles/compute.instanceAdmin"
-add_iam_policy_binding "roles/compute.instanceAdmin.v1"
+add_iam_policy_binding "roles/iam.serviceAccountAdmin"
 add_iam_policy_binding "roles/iam.serviceAccountUser"
+add_iam_policy_binding "roles/storage.admin"
+add_iam_policy_binding "roles/iap.admin"
 
 # Enable necessary APIs
-enable_api "bigquery.googleapis.com"
-enable_api "storage.googleapis.com"
+enable_api "compute.googleapis.com"
+enable_api "iam.googleapis.com"
+enable_api "iap.googleapis.com"
+enable_api "storage-api.googleapis.com"
 
 # Create GCS bucket for Terraform state
 create_gcs_bucket "$TF_STATE_BUCKET"
 
+# Grant access to the Terraform state bucket
 add_iam_policy_binding_gcs_bucket "roles/storage.objectAdmin" "$TF_STATE_BUCKET"
 
-echo "IAM roles assigned successfully to $USER_EMAIL in project $PROJECT_ID"
+echo "Setup completed successfully for $USER_EMAIL in project $PROJECT_ID"
