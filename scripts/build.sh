@@ -28,9 +28,9 @@ CONTEXT_DIR=$CWD
 DOCKERFILE="$CWD/Dockerfile"
 VERSION=$(grep '^version\s*=' $CWD/node/Cargo.toml | sed 's/^version\s*=\s*//; s/^"//; s/"$//; s/^'"'"'//; s/'"'"'$//')
 VERSION_LABEL="full-node-$VERSION"
-VERSION_TAG="ghcr.io/xerberus/xerberus-node:$LABEL"
+VERSION_TAG="ghcr.io/xerberus/xerberus-node:$VERSION_LABEL"
 LATEST_LABEL="full-node-latest"
-LATEST_TAG="ghcr.io/xerberus/xerberus-node:$LABEL"
+LATEST_TAG="ghcr.io/xerberus/xerberus-node:$LATEST_LABEL"
 
 echo building "$VERSION_TAG" from "$DOCKERFILE" in "$CONTEXT_DIR"
 docker build -f "$DOCKERFILE" --platform "$PLATFORM" -t "$VERSION_TAG" "$CONTEXT_DIR" \
