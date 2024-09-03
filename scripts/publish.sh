@@ -3,7 +3,7 @@
 set -e
 
 CWD="$(cd "$(dirname "$0")"/.. && pwd)"
-NAMESPACE="XerberusTeam"
+NAMESPACE="xerberusteam"
 
 usage() {
     echo "Usage: $0 [options]"

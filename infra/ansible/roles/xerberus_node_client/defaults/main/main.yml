@@ -37,5 +37,5 @@ allow_ssh: true
 # See documenation for more details: TODO: link to our docs
 host_ip_address_to_bind_to: 0.0.0.0
 
-docker_image: "ghcr.io/XerberusTeam/xerberus-node:full-node-latest"
+docker_image: "ghcr.io/xerberusteam/xerberus-node:full-node-latest"
 container_name: "xerberus-full-node"

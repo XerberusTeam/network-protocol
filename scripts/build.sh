@@ -4,7 +4,7 @@ set -e
 
 CWD="$(cd "$(dirname "$0")"/.. && pwd)"
 PLATFORM="linux/amd64"
-NAMESPACE="XerberusTeam"
+NAMESPACE="xerberusteam"
 
 usage() {
     echo "Usage: $0 [options]"
@@ -39,7 +39,7 @@ echo building "$VERSION_TAG" from "$DOCKERFILE" in "$CONTEXT_DIR"
 docker build -f "$DOCKERFILE" --platform "$PLATFORM" -t "$VERSION_TAG" "$CONTEXT_DIR" \
     --label "org.opencontainers.image.title=xerberus-node" \
     --label "org.opencontainers.image.version=$VERSION" \
-    --label "org.opencontainers.image.source=https://github.com/XerberusTeam/network-protocol" \
+    --label "org.opencontainers.image.source=https://github.com/xerberusteam/network-protocol" \
     --label "org.opencontainers.image.description=xerberus-node-full-node" \
     --label "org.opencontainers.image.licenses=Apache-2.0"
 
@@ -47,6 +47,6 @@ echo building "$LATEST_TAG" from "$DOCKERFILE" in "$CONTEXT_DIR"
 docker build -f "$DOCKERFILE" --platform "$PLATFORM" -t "$LATEST_TAG" "$CONTEXT_DIR" \
     --label "org.opencontainers.image.title=xerberus-node" \
     --label "org.opencontainers.image.version=$VERSION" \
-    --label "org.opencontainers.image.source=https://github.com/XerberusTeam/network-protocol" \
+    --label "org.opencontainers.image.source=https://github.com/xerberusteam/network-protocol" \
     --label "org.opencontainers.image.description=xerberus-node-full-node" \
     --label "org.opencontainers.image.licenses=Apache-2.0"
