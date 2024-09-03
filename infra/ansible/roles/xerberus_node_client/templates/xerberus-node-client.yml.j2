@@ -1,0 +1,20 @@
+{{ ansible_managed | comment }}
+version: "3.9"
+
+services:
+  {{ container_name }}:
+    container_name: "{{ container_name }}"
+    image: {{ docker_image }}
+    restart: unless-stopped
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    network_mode: "host"
+    logging:
+      driver: journald
+      options:
+        env: "NODE={{ container_name }}"
+        tag: {% raw %}'{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'{% endraw %}

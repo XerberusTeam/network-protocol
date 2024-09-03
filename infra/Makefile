@@ -9,7 +9,7 @@ init-reconfigure:
 new_workspace:
 	terraform -chdir=terraform/ workspace new testnet
 
-testnet: tf_testnet refresh plan apply
+testnet: tf_testnet refresh apply
 
 tf_testnet:
 	terraform -chdir=terraform/ workspace select testnet
@@ -28,3 +28,15 @@ apply-auto:
 
 destroy:
 	terraform -chdir=terraform/ destroy
+
+output:
+	terraform -chdir=terraform/ output
+
+output_ssh:
+	terraform -chdir=terraform/ output iap_tunnel_command
+
+output_scp:
+	terraform -chdir=terraform/ output iap_scp_command
+
+ansible_provision:
+	./ansible/scripts/03-provision.sh

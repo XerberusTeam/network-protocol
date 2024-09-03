@@ -43,6 +43,11 @@ output "iap_tunnel_command" {
   value       = "gcloud compute ssh --zone ${local.zone} ${google_compute_instance.multiple[0].name} --tunnel-through-iap --project ${local.project_id}"
 }
 
+output "iap_scp_command" {
+  description = "Command to SCP Ansible into the instance using IAP tunneling"
+  value       = "gcloud compute scp --compress --zone ${local.zone} --tunnel-through-iap --project ${local.project_id} --recurse ./ansible/ ${google_compute_instance.multiple[0].name}:~/ansible/"
+}
+
 output "os_login_enabled" {
   description = "Indicates whether OS Login is enabled"
   value       = google_compute_project_metadata_item.os_login.value

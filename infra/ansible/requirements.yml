@@ -1,0 +1,14 @@
+---
+roles:
+  - name: common
+  - name: xerberus_node_client
+  - name: geerlingguy.docker
+    version: 7.3.0
+  - name: geerlingguy.pip
+    version: 3.0.3
+
+collections:
+  - name: community.docker
+    version: 3.11.0
+  - name: community.general
+    version: 9.2.0
