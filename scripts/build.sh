@@ -4,12 +4,14 @@ set -e
 
 CWD="$(cd "$(dirname "$0")"/.. && pwd)"
 PLATFORM="linux/amd64"
+NAMESPACE="XerberusTeam"
 
 usage() {
     echo "Usage: $0 [options]"
     echo "Options:"
-    echo "  --cwd PATH          Set the current working directory (default: $CWD)"
-    echo "  --platform PLATFORM Set the build platform (default: $PLATFORM)"
+    echo "  --cwd PATH              Set the current working directory (default: $CWD)"
+    echo "  --platform PLATFORM     Set the build platform (default: $PLATFORM)"
+    echo "  --namespace NAMESPACE   Set the namespace for the image (default: $NAMESPACE)"
     exit 1
 }
 
@@ -18,6 +20,7 @@ while [[ "$#" -gt 0 ]]; do
     case $1 in
         --cwd) CWD="$2"; shift ;;
         --platform) PLATFORM="$2"; shift ;;
+        --namespace) NAMESPACE="$2"; shift ;;
         -h|--help) usage ;;  # Display help
         *) echo "Unknown parameter passed: $1"; usage ;;
     esac
@@ -28,9 +31,9 @@ CONTEXT_DIR=$CWD
 DOCKERFILE="$CWD/Dockerfile"
 VERSION=$(grep '^version\s*=' $CWD/node/Cargo.toml | sed 's/^version\s*=\s*//; s/^"//; s/"$//; s/^'"'"'//; s/'"'"'$//')
 VERSION_LABEL="full-node-$VERSION"
-VERSION_TAG="ghcr.io/xerberus/xerberus-node:$VERSION_LABEL"
+VERSION_TAG="ghcr.io/$NAMESPACE/xerberus-node:$VERSION_LABEL"
 LATEST_LABEL="full-node-latest"
-LATEST_TAG="ghcr.io/xerberus/xerberus-node:$LATEST_LABEL"
+LATEST_TAG="ghcr.io/$NAMESPACE/xerberus-node:$LATEST_LABEL"
 
 echo building "$VERSION_TAG" from "$DOCKERFILE" in "$CONTEXT_DIR"
 docker build -f "$DOCKERFILE" --platform "$PLATFORM" -t "$VERSION_TAG" "$CONTEXT_DIR" \

@@ -31,10 +31,10 @@ jobs:
     - name: Build Docker image
       run: |
         chmod +x ./scripts/build.sh
-        ./scripts/build.sh --cwd ${{ github.workspace }} --platform linux/amd64
+        ./scripts/build.sh --cwd ${{ github.workspace }} --namespace ${{ github.actor }} --platform linux/amd64
 
     - name: Push Docker image
       if: github.event_name != 'pull_request'
       run: |
         chmod +x ./scripts/publish.sh
-        ./scripts/publish.sh --cwd ${{ github.workspace }}
+        ./scripts/publish.sh --cwd ${{ github.workspace }} --namespace ${{ github.actor }}
