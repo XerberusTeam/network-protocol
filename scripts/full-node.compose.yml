@@ -2,7 +2,7 @@ version: "3.2"
 
 services:
   full-node:
-    # image: ${FULL_NODE_IMAGE:-xerberus/xerberus-node:full-node-latest}
+    # image: ${FULL_NODE_IMAGE:-ghcr.io/xerberus/xerberus-node:full-node-latest}
     container_name: full-node
     build:
       context: ..

@@ -23,9 +23,9 @@ done
 
 VERSION=$(grep '^version\s*=' $CWD/node/Cargo.toml | sed 's/^version\s*=\s*//; s/^"//; s/"$//; s/^'"'"'//; s/'"'"'$//')
 VERSION_LABEL="full-node-$VERSION"
-VERSION_TAG="xerberus/xerberus-node:$LABEL"
+VERSION_TAG="ghcr.io/xerberus/xerberus-node:$LABEL"
 LATEST_LABEL="full-node-latest"
-LATEST_TAG="xerberus/xerberus-node:$LABEL"
+LATEST_TAG="ghcr.io/xerberus/xerberus-node:$LABEL"
 
 echo publishing "$VERSION_TAG"
 docker push "$VERSION_TAG"

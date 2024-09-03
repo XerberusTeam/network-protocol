@@ -28,12 +28,22 @@ CONTEXT_DIR=$CWD
 DOCKERFILE="$CWD/Dockerfile"
 VERSION=$(grep '^version\s*=' $CWD/node/Cargo.toml | sed 's/^version\s*=\s*//; s/^"//; s/"$//; s/^'"'"'//; s/'"'"'$//')
 VERSION_LABEL="full-node-$VERSION"
-VERSION_TAG="xerberus/xerberus-node:$LABEL"
+VERSION_TAG="ghcr.io/xerberus/xerberus-node:$LABEL"
 LATEST_LABEL="full-node-latest"
-LATEST_TAG="xerberus/xerberus-node:$LABEL"
+LATEST_TAG="ghcr.io/xerberus/xerberus-node:$LABEL"
 
 echo building "$VERSION_TAG" from "$DOCKERFILE" in "$CONTEXT_DIR"
-docker build -f "$DOCKERFILE" --platform "$PLATFORM" -t "$VERSION_TAG" "$CONTEXT_DIR"
+docker build -f "$DOCKERFILE" --platform "$PLATFORM" -t "$VERSION_TAG" "$CONTEXT_DIR" \
+    --label "org.opencontainers.image.title=xerberus-node" \
+    --label "org.opencontainers.image.version=$VERSION" \
+    --label "org.opencontainers.image.source=https://github.com/XerberusTeam/network-protocol" \
+    --label "org.opencontainers.image.description=xerberus-node-full-node" \
+    --label "org.opencontainers.image.licenses=Apache-2.0"
 
 echo building "$LATEST_TAG" from "$DOCKERFILE" in "$CONTEXT_DIR"
-docker build -f "$DOCKERFILE" --platform "$PLATFORM" -t "$LATEST_TAG" "$CONTEXT_DIR"
+docker build -f "$DOCKERFILE" --platform "$PLATFORM" -t "$LATEST_TAG" "$CONTEXT_DIR" \
+    --label "org.opencontainers.image.title=xerberus-node" \
+    --label "org.opencontainers.image.version=$VERSION" \
+    --label "org.opencontainers.image.source=https://github.com/XerberusTeam/network-protocol" \
+    --label "org.opencontainers.image.description=xerberus-node-full-node" \
+    --label "org.opencontainers.image.licenses=Apache-2.0"
