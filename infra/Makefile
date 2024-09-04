@@ -38,5 +38,11 @@ output_ssh:
 output_scp:
 	terraform -chdir=terraform/ output iap_scp_command
 
-ansible_provision:
-	./ansible/scripts/03-provision.sh
+ansible_provision: make_rsync trigger_ansible
+
+make_rsync:
+	./scripts/rsync.sh
+
+trigger_ansible:
+	./scripts/ssh.sh "docker pull ghcr.io/xerberusteam/xerberus-node:full-node-latest"
+	./scripts/ssh.sh ./ansible/scripts/03-provision.sh
