@@ -35,7 +35,7 @@ resource "google_compute_instance" "multiple" {
     startup-script = file("start-up-script.sh")
   }
 
-  tags = ["allow-iap-ssh", "allow-protocol"]
+  tags = ["allow-iap-ssh", "allow-protocol", "http-server", "https-server", "allow-egress"]
 
   network_interface {
     # network = "default"
@@ -64,3 +64,63 @@ resource "google_compute_instance" "multiple" {
   allow_stopping_for_update = true
 }
 
+resource "google_compute_instance_group" "multiple" {
+  name        = "${local.prefix}-instance-group"
+  description = "Node instance group"
+  zone        = local.zone
+
+  instances = google_compute_instance.multiple[*].self_link
+
+  named_port {
+    name = "jsonrpc"
+    port = 9944
+  }
+}
+
+resource "google_compute_health_check" "jsonrpc" {
+  name               = "${local.prefix}-health-check"
+  timeout_sec        = 5
+  check_interval_sec = 10
+
+  tcp_health_check {
+    port = 9944
+  }
+}
+
+resource "google_compute_backend_service" "jsonrpc-tcp" {
+  name        = "${local.prefix}-backend-service"
+  protocol    = "TCP"
+  port_name   = "jsonrpc"
+  timeout_sec = 1800 # 30 minutes, adjust as needed
+
+  connection_draining_timeout_sec = 300
+
+  # locality_lb_policy    = "RING_HASH"
+  load_balancing_scheme = "EXTERNAL"
+  session_affinity      = "CLIENT_IP"
+
+  backend {
+    group = google_compute_instance_group.multiple.self_link
+  }
+
+  health_checks = [google_compute_health_check.jsonrpc.self_link]
+}
+
+resource "google_compute_backend_service" "jsonrpc-http" {
+  name        = "${local.prefix}-backend-service-over-http"
+  protocol    = "HTTP"
+  port_name   = "jsonrpc"
+  timeout_sec = 1800 # 30 minutes, adjust as needed
+
+  connection_draining_timeout_sec = 300
+
+  # locality_lb_policy    = "RING_HASH"
+  load_balancing_scheme = "EXTERNAL"
+  session_affinity      = "CLIENT_IP"
+
+  backend {
+    group = google_compute_instance_group.multiple.self_link
+  }
+
+  health_checks = [google_compute_health_check.jsonrpc.self_link]
+}

@@ -45,7 +45,7 @@ output "iap_tunnel_command" {
 
 output "iap_scp_command" {
   description = "Command to SCP Ansible into the instance using IAP tunneling"
-  value       = "gcloud compute scp --compress --zone ${local.zone} --tunnel-through-iap --project ${local.project_id} --recurse ./ansible/ ${google_compute_instance.multiple[0].name}:~/ansible/"
+  value       = "gcloud compute scp --compress --zone ${local.zone} --tunnel-through-iap --project ${local.project_id} --recurse ./ansible ${google_compute_instance.multiple[0].name}:~/ansible"
 }
 
 output "os_login_enabled" {
@@ -61,4 +61,12 @@ output "firewall_rule_name" {
 output "polkadot_node_public_ips" {
   description = "Public IP addresses of the Polkadot node instances"
   value       = google_compute_address.static_ip[*].address
+}
+
+output "load_balancer_ip" {
+  value = google_compute_global_address.jsonrpc.address
+}
+
+output "jsonrpc_url" {
+  value = "wss://${google_compute_managed_ssl_certificate.jsonrpc.managed[0].domains[0]}"
 }

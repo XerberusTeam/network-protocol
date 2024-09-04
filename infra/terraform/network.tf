@@ -50,6 +50,23 @@ resource "google_compute_firewall" "allow_protocol" {
     ]
   }
 
-  source_ranges = ["0.0.0.0/0"]
-  target_tags   = ["allow-protocol"]
+  source_ranges = [
+    "0.0.0.0/0",
+    # GCP Load Balancer IP ranges
+    "130.211.0.0/22", "35.191.0.0/16"
+  ]
+  target_tags = ["allow-protocol"]
+}
+
+resource "google_compute_firewall" "allow_egress" {
+  name    = "${local.prefix}-allow-egress"
+  network = google_compute_network.this.name
+
+  allow {
+    protocol = "all"
+  }
+
+  direction          = "EGRESS"
+  destination_ranges = ["0.0.0.0/0"]
+  target_tags        = ["allow-egress"]
 }
