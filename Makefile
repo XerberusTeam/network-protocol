@@ -23,13 +23,13 @@ publish:
 # Build the chainspec file
 build-new-spec:
 	./scripts/xerberus-node.sh build-spec \
-	--disable-default-bootnode > ./chain-spec.json
-	cat ./chain-spec.json
+	--disable-default-bootnode > ./chain-spec-source.json
+	cat ./chain-spec-source.json
 
 build-spec:
 	./scripts/xerberus-node.sh build-spec \
-	--chain ./chain-spec.json \
-	--raw > ./chain-spec-raw.json
+	--chain ./chain-spec-source.json \
+	--raw > ./chain-spec.json
 	cat ./chain-spec.json
 
 generate-node-key:
