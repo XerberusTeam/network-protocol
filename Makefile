@@ -37,3 +37,6 @@ generate-node-key:
 
 generate-user-key:
 	./scripts/subkey.sh generate
+
+join-testnet:
+	./scripts/join-testnet.sh

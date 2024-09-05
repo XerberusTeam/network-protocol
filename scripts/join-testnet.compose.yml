@@ -1,0 +1,39 @@
+version: "3.9"
+
+volumes:
+  xerberus_data:
+
+services:
+  testnet-node:
+    container_name: "testnet-node"
+    image: ghcr.io/xerberusteam/xerberus-node:full-node-latest
+    pull_policy: always
+    restart: unless-stopped
+    command: |
+      --base-path /data/nodes/testnet-node
+      --chain /data/chain-spec.json
+      --rpc-external
+      --rpc-methods Unsafe
+      --rpc-cors all
+      --telemetry-url "wss://telemetry.polkadot.io/submit/ 0"
+      --prometheus-external
+      --no-private-ip
+      --sync fast
+      --node-key 0000000000000000000000000000000000000000000000000000000000000001
+      --bootnodes /dns4/node.xerberus.io/tcp/443/wss/p2p/12D3KooWCYKbsQw2r5575MA8YqMhn8AqhVuZkfobPMyoKzEP595t
+      --log runtime=debug,libp2p=trace,sub-libp2p=trace,sync=debug,gossip=debug,peerset=debug,network=debug
+    ports:
+      - "9944:9944"
+      - "9933:9933"
+      - "9615:9615"
+      - "9930:9930"
+      - "9333:9333"
+    environment:
+      - RUST_LOG=info,libp2p=debug,sub-libp2p=debug,sync=debug,gossip=debug,peerset=debug,network=debug
+    volumes:
+      - xerberus_data:/data/nodes
+    logging:
+      driver: local
+      options:
+        max-size: "10m"
+        max-file: "5"

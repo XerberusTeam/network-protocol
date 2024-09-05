@@ -3,16 +3,16 @@
 set -e
 
 CWD="$(cd "$(dirname "$0")"/.. && pwd)"
-MODE="full-node"
+MODE="join-testnet"
 
 usage() {
     echo "Usage: $0 [options]"
     echo "Options:"
     echo "  --cwd PATH          Set the current working directory (default: $CWD)"
-    echo "  --mode MODE         Set the mode (default: $MODE), shall be one of: full-node, localnet, dev"
+    echo "  --mode MODE         Set the mode (default: $MODE), shall be one of: join-testnet, localnet, dev"
     echo "  --dev               Set the mode to dev"
     echo "  --localnet          Set the mode to localnet"
-    echo "  --full-node         Set the mode to full-node (default)"
+    echo "  --join-testnet      Set the mode to join-testnet (default)"
     exit 1
 }
 
@@ -23,7 +23,7 @@ while [[ "$#" -gt 0 ]]; do
         --mode) MODE="$2"; shift ;;
         --dev) MODE="dev" ;;
         --localnet) MODE="localnet" ;;
-        --full-node) MODE="full-node" ;;
+        --join-testnet) MODE="join-testnet" ;;
         -h|--help) usage ;;  # Display help
     esac
     shift
