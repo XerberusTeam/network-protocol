@@ -13,3 +13,27 @@ run-chain:
 
 purge-chain:
 	cargo run --release -- purge-chain --dev
+
+build:
+	./scripts/build.sh
+
+publish:
+	./scripts/publish.sh
+
+# Build the chainspec file
+build-new-spec:
+	./scripts/xerberus-node.sh build-spec \
+	--disable-default-bootnode > ./chain-spec.json
+	cat ./chain-spec.json
+
+build-spec:
+	./scripts/xerberus-node.sh build-spec \
+	--chain ./chain-spec.json \
+	--raw > ./chain-spec-raw.json
+	cat ./chain-spec.json
+
+generate-node-key:
+	./scripts/subkey.sh generate-node-key
+
+generate-user-key:
+	./scripts/subkey.sh generate
