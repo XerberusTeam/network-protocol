@@ -13,3 +13,6 @@
 .vscode/settings.json
 
 *.db
+chain-spec-source.json
+!chain-spec.json
+/chains

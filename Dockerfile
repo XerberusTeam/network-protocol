@@ -28,6 +28,8 @@ ADD ./rustfmt.toml ./rustfmt.toml
 
 RUN cargo build --release
 
+ADD ./chain-spec.json ./chain-spec.json
+
 # Runtime stage
 FROM debian:bookworm-slim
 
@@ -49,6 +51,7 @@ USER polkadot
 
 # copy the compiled binary to the container
 COPY --chown=polkadot:polkadot --chmod=774 --from=builder /usr/src/target/release/ /usr/bin/
+COPY --chown=polkadot:polkadot --chmod=774 --from=builder /usr/src/chain-spec.json /data/chain-spec.json
 
 # check if executable works in this container
 RUN /usr/bin/xerberus-net --version
