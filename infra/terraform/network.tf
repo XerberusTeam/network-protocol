@@ -17,6 +17,13 @@ resource "google_compute_address" "static_ip" {
   address_type = "EXTERNAL"
 }
 
+resource "google_compute_address" "static_ip_lightnode" {
+  count        = local.number_of_lightnodes
+  name         = "${local.compute_name}-static-ip-lightnode-${count.index}"
+  region       = local.region
+  address_type = "EXTERNAL"
+}
+
 resource "google_compute_firewall" "allow_iap_ssh" {
   name    = "${local.prefix}-allow-iap-ssh"
   network = google_compute_network.this.name

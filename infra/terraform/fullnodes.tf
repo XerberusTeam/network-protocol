@@ -75,6 +75,16 @@ resource "google_compute_instance_group" "multiple" {
     name = "jsonrpc"
     port = 9944
   }
+
+  named_port {
+    name = "libp2p"
+    port = 30333
+  }
+
+  named_port {
+    name = "libp2pws"
+    port = 30334
+  }
 }
 
 resource "google_compute_health_check" "jsonrpc" {
@@ -110,6 +120,44 @@ resource "google_compute_backend_service" "jsonrpc-http" {
   name        = "${local.prefix}-backend-service-over-http"
   protocol    = "HTTP"
   port_name   = "jsonrpc"
+  timeout_sec = 1800 # 30 minutes, adjust as needed
+
+  connection_draining_timeout_sec = 300
+
+  # locality_lb_policy    = "RING_HASH"
+  load_balancing_scheme = "EXTERNAL"
+  session_affinity      = "CLIENT_IP"
+
+  backend {
+    group = google_compute_instance_group.multiple.self_link
+  }
+
+  health_checks = [google_compute_health_check.jsonrpc.self_link]
+}
+
+resource "google_compute_backend_service" "libp2p" {
+  name        = "${local.prefix}-backend-service-over-libp2p"
+  protocol    = "TCP"
+  port_name   = "libp2p"
+  timeout_sec = 1800 # 30 minutes, adjust as needed
+
+  connection_draining_timeout_sec = 300
+
+  # locality_lb_policy    = "RING_HASH"
+  load_balancing_scheme = "EXTERNAL"
+  session_affinity      = "CLIENT_IP"
+
+  backend {
+    group = google_compute_instance_group.multiple.self_link
+  }
+
+  health_checks = [google_compute_health_check.jsonrpc.self_link]
+}
+
+resource "google_compute_backend_service" "libp2pws" {
+  name        = "${local.prefix}-backend-service-over-libp2pws"
+  protocol    = "TCP"
+  port_name   = "libp2pws"
   timeout_sec = 1800 # 30 minutes, adjust as needed
 
   connection_draining_timeout_sec = 300

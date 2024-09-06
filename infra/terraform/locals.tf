@@ -7,10 +7,14 @@ locals {
   region       = local.settings.region
   zone         = local.settings.zone
   prefix       = "${local.env_name}-xerberus"
-  machine_type = "e2-standard-8"
   compute_name = "${local.prefix}-compute"
 
-  number_of_instances = 1
+  machine_type           = "e2-standard-8"
+  lightnode_machine_type = "e2-standard-4"
+
+  number_of_instances  = 1
+  number_of_lightnodes = 1
+
 
   # Environment variables for the function
   env_vars = {

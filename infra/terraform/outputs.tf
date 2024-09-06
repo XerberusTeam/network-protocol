@@ -23,6 +23,11 @@ output "polkadot_node_internal_ips" {
   value       = google_compute_instance.multiple[*].network_interface[0].network_ip
 }
 
+output "polkadot_lightnode_internal_ips" {
+  description = "Internal IP addresses of the lightnode instances"
+  value       = google_compute_instance.lightnodes[*].network_interface[0].network_ip
+}
+
 output "service_account_email" {
   description = "Email of the service account used by the node instances"
   value       = google_service_account.this.email
@@ -61,6 +66,11 @@ output "firewall_rule_name" {
 output "polkadot_node_public_ips" {
   description = "Public IP addresses of the Polkadot node instances"
   value       = google_compute_address.static_ip[*].address
+}
+
+output "polkadot_lightnode_public_ips" {
+  description = "Public IP addresses of the lightnode instances"
+  value       = google_compute_address.static_ip_lightnode[*].address
 }
 
 output "load_balancer_ip" {
