@@ -19,8 +19,7 @@ services:
       --prometheus-external
       --no-private-ip
       --sync fast
-      --node-key 0000000000000000000000000000000000000000000000000000000000000001
-      --bootnodes /dns4/node.xerberus.io/tcp/443/wss/p2p/12D3KooWCYKbsQw2r5575MA8YqMhn8AqhVuZkfobPMyoKzEP595t
+      --bootnodes /dns/node.xerberus.io/tcp/30333/p2p/12D3KooWCYKbsQw2r5575MA8YqMhn8AqhVuZkfobPMyoKzEP595t/p2p/12D3KooWCYKbsQw2r5575MA8YqMhn8AqhVuZkfobPMyoKzEP595t
       --log runtime=debug,libp2p=trace,sub-libp2p=trace,sync=debug,gossip=debug,peerset=debug,network=debug
     ports:
       - "9944:9944"
