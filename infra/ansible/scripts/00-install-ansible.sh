@@ -28,6 +28,9 @@ if ! command -v pipx &> /dev/null; then
     python3 -m pipx ensurepath
 fi
 
+sudo apt-get update
+sudo apt install ansible-core
+
 python3 -m pipx install ansible
 python3 -m pipx install ansible-core
 python3 -m pipx install argcomplete
