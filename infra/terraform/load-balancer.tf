@@ -17,9 +17,33 @@ resource "google_compute_global_forwarding_rule" "jsonrpc-9944" {
   ip_address = google_compute_global_address.jsonrpc.address
 }
 
+resource "google_compute_global_forwarding_rule" "libp2p-30333" {
+  name       = "${local.prefix}-libp2p-forwarding-rule"
+  target     = google_compute_target_tcp_proxy.libp2p.self_link
+  port_range = "30333"
+  ip_address = google_compute_global_address.jsonrpc.address
+}
+
+resource "google_compute_global_forwarding_rule" "libp2p-30334" {
+  name       = "${local.prefix}-libp2pws-forwarding-rule"
+  target     = google_compute_target_tcp_proxy.libp2pws.self_link
+  port_range = "30334"
+  ip_address = google_compute_global_address.jsonrpc.address
+}
+
 resource "google_compute_target_tcp_proxy" "jsonrpc" {
   name            = "${local.prefix}-tcp-proxy"
   backend_service = google_compute_backend_service.jsonrpc-tcp.self_link
+}
+
+resource "google_compute_target_tcp_proxy" "libp2p" {
+  name            = "${local.prefix}-libp2p-proxy"
+  backend_service = google_compute_backend_service.libp2p.self_link
+}
+
+resource "google_compute_target_tcp_proxy" "libp2pws" {
+  name            = "${local.prefix}-libp2pws-proxy"
+  backend_service = google_compute_backend_service.libp2pws.self_link
 }
 
 resource "google_compute_target_https_proxy" "jsonrpc" {
