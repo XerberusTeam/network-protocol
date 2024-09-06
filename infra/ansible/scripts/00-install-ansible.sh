@@ -29,7 +29,7 @@ if ! command -v pipx &> /dev/null; then
 fi
 
 sudo apt-get update
-sudo apt install ansible-core
+sudo apt install -y ansible-core
 
 python3 -m pipx install ansible
 python3 -m pipx install ansible-core
