@@ -30,7 +30,6 @@ RUN cargo build --release
 
 ADD ./chain-spec.json ./chain-spec.json
 
-# Runtime stage
 FROM debian:bookworm-slim
 
 RUN apt-get update && \
@@ -41,7 +40,6 @@ RUN apt-get update && \
 	apt-get clean && \
 	find /var/lib/apt/lists/ -type f -not -name lock -delete;
 
-# add user and link ~/.local/share/polkadot to /data
 RUN  useradd -m -u 1000 -U -s /bin/sh -d /polkadot polkadot && \
 	mkdir -p /data /polkadot/.local/share && \
 	chown -R polkadot:polkadot /data && \
@@ -49,14 +47,15 @@ RUN  useradd -m -u 1000 -U -s /bin/sh -d /polkadot polkadot && \
 
 USER polkadot
 
-# copy the compiled binary to the container
+RUN mkdir -p /data
+RUN chown polkadot:polkadot /data
+RUN chmod 774 /data
+
 COPY --chown=polkadot:polkadot --chmod=774 --from=builder /usr/src/target/release/ /usr/bin/
 COPY --chown=polkadot:polkadot --chmod=774 --from=builder /usr/src/chain-spec.json /data/chain-spec.json
 
-# check if executable works in this container
 RUN /usr/bin/xerberus-net --version
 
-# ws_port
-EXPOSE 9930 9333 9944 30333 30334
+EXPOSE 9930 9333 9944 30333 30334 9615
 
 ENTRYPOINT ["/usr/bin/xerberus-net"]
