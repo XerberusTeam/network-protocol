@@ -1,12 +1,7 @@
-data "google_compute_image" "this" {
-  family  = "ubuntu-2404-lts-amd64"
-  project = "ubuntu-os-cloud"
-}
-
 resource "google_compute_disk" "lightnodes" {
   count = local.number_of_lightnodes
 
-  name = "${local.compute_name}-disk-${count.index}"
+  name = "${local.compute_name}-lightnode-disk-${count.index}"
   type = "pd-ssd"
   zone = local.zone
   size = 1000
@@ -85,4 +80,91 @@ resource "google_compute_instance_group" "lightnodes" {
     name = "libp2pws"
     port = 30334
   }
+}
+
+
+resource "google_compute_health_check" "lightnodes-jsonrpc" {
+  name               = "${local.prefix}-lightnodes-health-check"
+  timeout_sec        = 5
+  check_interval_sec = 10
+
+  tcp_health_check {
+    port = 9944
+  }
+}
+
+resource "google_compute_backend_service" "lightnodes-jsonrpc-tcp" {
+  name        = "${local.prefix}-lightnodes-backend-service"
+  protocol    = "TCP"
+  port_name   = "jsonrpc"
+  timeout_sec = 1800 # 30 minutes, adjust as needed
+
+  connection_draining_timeout_sec = 300
+
+  # locality_lb_policy    = "RING_HASH"
+  load_balancing_scheme = "EXTERNAL"
+  session_affinity      = "CLIENT_IP"
+
+  backend {
+    group = google_compute_instance_group.lightnodes.self_link
+  }
+
+  health_checks = [google_compute_health_check.lightnodes-jsonrpc.self_link]
+}
+
+resource "google_compute_backend_service" "lightnodes-jsonrpc-http" {
+  name        = "${local.prefix}-lightnodes-backend-service-over-http"
+  protocol    = "HTTP"
+  port_name   = "jsonrpc"
+  timeout_sec = 1800 # 30 minutes, adjust as needed
+
+  connection_draining_timeout_sec = 300
+
+  # locality_lb_policy    = "RING_HASH"
+  load_balancing_scheme = "EXTERNAL"
+  session_affinity      = "CLIENT_IP"
+
+  backend {
+    group = google_compute_instance_group.lightnodes.self_link
+  }
+
+  health_checks = [google_compute_health_check.lightnodes-jsonrpc.self_link]
+}
+
+resource "google_compute_backend_service" "lightnodes-libp2p" {
+  name        = "${local.prefix}-lightnodes-backend-service-over-libp2p"
+  protocol    = "TCP"
+  port_name   = "libp2p"
+  timeout_sec = 1800 # 30 minutes, adjust as needed
+
+  connection_draining_timeout_sec = 300
+
+  # locality_lb_policy    = "RING_HASH"
+  load_balancing_scheme = "EXTERNAL"
+  session_affinity      = "CLIENT_IP"
+
+  backend {
+    group = google_compute_instance_group.lightnodes.self_link
+  }
+
+  health_checks = [google_compute_health_check.lightnodes-jsonrpc.self_link]
+}
+
+resource "google_compute_backend_service" "lightnodes-libp2pws" {
+  name        = "${local.prefix}-lightnodes-backend-service-over-libp2pws"
+  protocol    = "TCP"
+  port_name   = "libp2pws"
+  timeout_sec = 1800 # 30 minutes, adjust as needed
+
+  connection_draining_timeout_sec = 300
+
+  # locality_lb_policy    = "RING_HASH"
+  load_balancing_scheme = "EXTERNAL"
+  session_affinity      = "CLIENT_IP"
+
+  backend {
+    group = google_compute_instance_group.lightnodes.self_link
+  }
+
+  health_checks = [google_compute_health_check.lightnodes-jsonrpc.self_link]
 }
