@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/env bash
 
 # This is a script that adds the roles needed for the user to execute the terraform scripts.
 #
@@ -23,24 +23,42 @@ TF_STATE_BUCKET="${TF_STATE_BUCKET:-tf-state-$PROJECT_ID}"
 
 set_project() {
     gcloud config set project "$PROJECT_ID"
+    if [ $? -ne 0 ]; then
+        echo "Failed to set project $PROJECT_ID"
+        exit 1
+    else
+        echo "Successfully set project $PROJECT_ID"
+    fi
 }
 
 enable_api() {
-    gcloud services enable "$1" --project="$PROJECT_ID"
+    local api=$1
+    gcloud services enable "$api" --project="$PROJECT_ID"
+    if [ $? -ne 0 ]; then
+        echo "Failed to enable API $api for project $PROJECT_ID"
+        exit 1
+    else
+        echo "Successfully enabled API $api for project $PROJECT_ID"
+    fi
 }
 
 create_gcs_bucket() {
-    gsutil mb -p "$PROJECT_ID" -l "$CLOUDSDK_COMPUTE_REGION" "gs://$1" || true
+    local bucket_name=$1
+    gsutil mb -p "$PROJECT_ID" -l "$CLOUDSDK_COMPUTE_REGION" "gs://$bucket_name" || true
 }
 
 add_iam_policy_binding() {
+    local role=$1
     gcloud projects add-iam-policy-binding "$PROJECT_ID" \
         --member="user:$USER_EMAIL" \
-        --role="$1"
+        --role="$role" \
+        --condition=None
 }
 
 add_iam_policy_binding_gcs_bucket() {
-    gsutil iam ch "user:$USER_EMAIL:$1" "gs://$2"
+    local role=$1
+    local bucket_name=$2
+    gsutil iam ch "user:$USER_EMAIL:$role" "gs://$bucket_name"
 }
 
 # Set project
@@ -48,10 +66,12 @@ set_project
 
 # Assign necessary roles
 add_iam_policy_binding "roles/compute.admin"
+add_iam_policy_binding "roles/compute.loadBalancerAdmin"
 add_iam_policy_binding "roles/iam.serviceAccountAdmin"
 add_iam_policy_binding "roles/iam.serviceAccountUser"
 add_iam_policy_binding "roles/storage.admin"
 add_iam_policy_binding "roles/iap.admin"
+add_iam_policy_binding "roles/networkmanagement.admin"
 
 # Enable necessary APIs
 enable_api "compute.googleapis.com"
