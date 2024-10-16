@@ -1,5 +1,4 @@
 target
-Dockerfile
-build
-node_modules
+*.Dockerfile
 .git
+.idea
