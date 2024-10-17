@@ -29,7 +29,7 @@ import {
 } from './components/List';
 import { PersistentSet } from './persist';
 import { ChainData, Node, PINNED_CHAINS, State, Update } from './state';
-import { getHashData, setHashData } from './utils';
+import { setHashData } from './utils';
 
 const CONNECTION_TIMEOUT_BASE = (1000 * 5) as Types.Milliseconds; // 5 seconds
 const CONNECTION_TIMEOUT_MAX = (1000 * 60 * 5) as Types.Milliseconds; // 5 minutes
@@ -123,7 +123,8 @@ export class Connection {
   // timestamp at which the last ping has been sent
   private pingSent: Maybe<Types.Timestamp> = null;
   // chain label to resubsribe to on reconnect
-  private resubscribeTo: Maybe<Types.GenesisHash> = getHashData().chain;
+  private resubscribeTo: Maybe<Types.GenesisHash> =
+    '0x01e5d426a4d964d2708a2114569d38fb05c6ff0694b2bb005b7328fa13e36d5c' as Types.GenesisHash;
 
   constructor(
     private socket: WebSocket,

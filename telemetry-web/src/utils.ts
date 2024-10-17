@@ -109,7 +109,10 @@ export function getHashData(): HashData {
 export function setHashData(val: HashData) {
   const update = Object.assign(getHashData(), val);
 
-  const { tab = '', chain = '' } = update;
+  const {
+    tab = '',
+    chain = '0x01e5d426a4d964d2708a2114569d38fb05c6ff0694b2bb005b7328fa13e36d5c',
+  } = update;
 
   window.location.hash = `#${tab}/${encodeURIComponent(chain)}`;
 }

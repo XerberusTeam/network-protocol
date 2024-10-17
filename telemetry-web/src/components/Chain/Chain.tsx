@@ -15,8 +15,10 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 import * as React from 'react';
+import { List, Map, Settings, Stats } from '../';
 import { Connection } from '../../Connection';
-import { Types, Maybe } from '../../common';
+import { Maybe, Types } from '../../common';
+import { Persistent, PersistentObject, PersistentSet } from '../../persist';
 import {
   State as AppState,
   Update as AppUpdate,
@@ -24,8 +26,6 @@ import {
 } from '../../state';
 import { getHashData } from '../../utils';
 import { Header } from './';
-import { List, Map, Settings, Stats } from '../';
-import { Persistent, PersistentObject, PersistentSet } from '../../persist';
 
 import './Chain.css';
 
@@ -53,9 +53,6 @@ export class Chain extends React.Component<ChainProps, ChainState> {
     switch (getHashData().tab) {
       case 'map':
         display = 'map';
-        break;
-      case 'settings':
-        display = 'settings';
         break;
     }
 
