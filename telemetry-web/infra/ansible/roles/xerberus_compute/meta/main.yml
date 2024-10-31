@@ -1,0 +1,15 @@
+---
+galaxy_info:
+  role_name: xerberus_compute
+  author: xerberus
+  description: Deploy xerberus_compute.
+  license: Apache-2.0
+  min_ansible_version: '2.4'
+  platforms:
+    - name: Ubuntu
+      versions:
+        - focal
+        - jammy
+        - noble
+  galaxy_tags:
+    - xerberus

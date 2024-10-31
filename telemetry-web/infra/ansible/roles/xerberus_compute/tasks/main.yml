@@ -1,0 +1,77 @@
+---
+- name: Gather os specific variables
+  ansible.builtin.include_vars: "{{ item }}"
+  with_first_found:
+    - "{{ ansible_distribution }}-{{ ansible_distribution_major_version }}.yml"
+    - "{{ ansible_os_family }}.yml"
+
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: true
+  when: ansible_os_family == 'Debian'
+
+- name: Install required software packages
+  ansible.builtin.package:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - "{{ packages }}"
+    - "{{ os_specific_packages | default([]) }}"
+
+- name: Create required directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    mode: "0600"
+    state: directory
+  loop: "{{ xerberus_dir_paths }}"
+
+- name: Find all pre-existing docker compose files to cleanup
+  ansible.builtin.find:
+    paths: "{{ xerberus_docker_compose_path }}"
+    patterns: "*.yml"
+    recurse: true
+  register: cleanup_docker_compose_files
+  ignore_errors: true
+
+- name: Remove all pre-existing docker compose files
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: absent
+  loop: "{{ cleanup_docker_compose_files.files }}"
+
+- name: Copy docker-compose files
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: "0600"
+  loop:
+    - src: xerberus-compute.yml.j2
+      dest: "{{ xerberus_docker_compose_path }}/xerberus-compute.yml"
+
+# Generate a list of docker-compose files to start the stack
+- name: Find all docker-compose files
+  ansible.builtin.find:
+    paths: "{{ xerberus_docker_compose_path }}"
+    patterns: "*.yml"
+    recurse: true
+  register: docker_compose_files
+
+- name: Set permissions for /var/run/docker.sock
+  ansible.builtin.file:
+    path: /var/run/docker.sock
+    mode: "0666"
+  become: true
+
+- name: Start xerberus stack
+  community.docker.docker_compose_v2:
+    project_src: "{{ xerberus_docker_compose_path }}"
+    files: "{{ docker_compose_files.files | map(attribute='path') | list }}"
+    remove_orphans: true
+    # docker_host: "unix:///var/run/docker.sock"
+    # docker_host: "tcp://localhost:2375"
+    state: present
+    # debug: true
+  # environment:
+  # DOCKER_HOST: "unix:///var/run/docker.sock"
+  # DOCKER_HOST: "tcp://localhost:2375"
+  become: true

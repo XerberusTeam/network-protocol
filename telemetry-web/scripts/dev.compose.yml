@@ -1,0 +1,14 @@
+version: '3.2'
+
+services:
+  dev:
+    container_name: telemetry-frontend
+    build:
+      context: ..
+      dockerfile: Dockerfile
+      target: output
+    environment:
+      SUBSTRATE_TELEMETRY_URL: ${SUBSTRATE_TELEMETRY_URL}
+    ports:
+      - '8000:8000'
+    network_mode: host

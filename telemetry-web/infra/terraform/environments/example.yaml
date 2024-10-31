@@ -1,0 +1,6 @@
+---
+project_id: foobar-123456
+region: europe-west2
+zone: europe-west2-a
+all_users_iam_binding:
+  - foo.bar@myorg.com
