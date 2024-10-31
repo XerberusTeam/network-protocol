@@ -14,6 +14,8 @@ locals {
 
   number_of_instances = 1
 
+  target_port = 8000
+
   domains = [
     local.env_name == "prod" ? local.base_domain : "${local.env_name}-${local.base_domain}",
   ]

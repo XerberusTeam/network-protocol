@@ -73,7 +73,7 @@ resource "google_compute_instance_group" "multiple" {
 
   named_port {
     name = "web"
-    port = 8000
+    port = local.target_port
   }
 }
 
@@ -83,7 +83,7 @@ resource "google_compute_health_check" "web" {
   check_interval_sec = 10
 
   tcp_health_check {
-    port = 8000
+    port = local.target_port
   }
 }
 

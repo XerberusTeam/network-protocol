@@ -10,10 +10,10 @@ resource "google_compute_global_forwarding_rule" "web-443" {
   ip_address = google_compute_global_address.web.address
 }
 
-resource "google_compute_global_forwarding_rule" "web-8000" {
+resource "google_compute_global_forwarding_rule" "target-port" {
   name       = "${local.prefix}-tcp-forwarding-rule"
   target     = google_compute_target_tcp_proxy.web.self_link
-  port_range = "8000"
+  port_range = local.target_port
   ip_address = google_compute_global_address.web.address
 }
 
