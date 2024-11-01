@@ -59,13 +59,13 @@ export class Connection {
     // If env_config.js is generated and loaded in, it'll set this variable.
     // This is set up in the Dockerfile. Otherwise, we just connect to a
     // default URL.
-    if (window.process_env?.[ENV_URL]) {
-      return window.process_env[ENV_URL] as string;
-    }
+    // if (window.process_env?.[ENV_URL]) {
+    //   return window.process_env[ENV_URL] as string;
+    // }
 
-    if (window.location.protocol === 'https:') {
-      return `wss://${window.location.hostname}/feed/`;
-    }
+    // if (window.location.protocol === 'https:') {
+    //   return `wss://${window.location.hostname}/feed/`;
+    // }
 
     // return 'ws://127.0.0.1:8000/feed';
     return 'wss://feed.telemetry.polkadot.io/feed';
