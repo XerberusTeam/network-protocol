@@ -22,21 +22,21 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 }
 
 .Row-synced {
-  color: #fff;
+  color: var(--color-accent-white);
 }
 
 .Row-pinned td:first-child {
-  border-left: 3px solid #e6007a;
+  border-left: 3px solid var(--color-fortune-mint);
   padding-left: 10px;
 }
 
 .Row-pinned td:last-child {
-  border-right: 3px solid #e6007a;
+  border-right: 3px solid var(--color-fortune-mint);
   padding-right: 10px;
 }
 
 .Row-pinned.Row-synced {
-  color: #e6007a;
+  color: var(--color-fortune-mint);
 }
 
 .Row-stale {
