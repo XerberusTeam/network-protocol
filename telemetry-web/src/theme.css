@@ -1,0 +1,9 @@
+:root {
+    /* New brand colors */
+    --color-royal-blue: #0075C7;
+    --color-fortune-mint: #0CC2AC;
+    --color-gradient-mint: #2CF4DD;
+    --color-accent-white: #E6E4DE;
+    --color-pure-black: #000000;
+    --gradient-banner: linear-gradient(351deg, #0CC2AC 5%, #0075C7 80%);
+}

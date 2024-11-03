@@ -17,7 +17,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
 .THead {
-  background: #393838;
+  background: var(--color-royal-blue);
 }
 
 .THeadCell {
@@ -32,8 +32,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 .THeadCell-sorted {
   cursor: pointer;
-  background: #e6007a;
-  color: #fff;
+  background: var(--color-fortune-mint);
+  color: var(--color-accent-white);
 }
 
 .THeadCell-container {

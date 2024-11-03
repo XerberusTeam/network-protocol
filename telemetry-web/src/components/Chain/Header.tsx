@@ -55,6 +55,7 @@ export class Header extends React.Component<HeaderProps> {
 
     return (
       <div className="Header">
+        
         <Tile icon={blockIcon} title="Best Block">
           #{formatNumber(best)}
         </Tile>

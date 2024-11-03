@@ -17,7 +17,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
 .Chains {
-  background: #e6007a;
+  background: var(--color-fortune-mint);
   color: #000;
   padding: 0 76px 0 16px;
   height: 40px;
@@ -29,13 +29,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
   position: absolute;
   right: 80px;
   top: 0px;
-  background: #e6007a;
-  background: linear-gradient(
-    90deg,
-    rgba(0, 0, 0, 0) 0px,
-    #e6007a 30px,
-    #e6007a 100%
-  );
+  background: var(--color-fortune-mint);
+  background: linear-gradient(90deg,
+      rgba(0, 0, 0, 0) 0px,
+      var(--color-fortune-mint) 30px,
+      var(--color-fortune-mint) 100%);
   z-index: 1;
   padding-left: 34px;
 }
@@ -88,7 +86,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
   display: inline-block;
   border-radius: 20px;
   background: #fff;
-  color: #e6007a;
+  color: var(--color-fortune-mint);
   font-size: 0.9em;
   margin-left: 0.5em;
   padding: 0.3em 0.5em;

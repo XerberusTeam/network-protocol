@@ -68,8 +68,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 }
 
 .AllChains-controls-sortby-active {
-  background-color: #e6007a;
-  border-color: #e6007a;
+  background-color: var(--color-fortune-mint);
+  border-color: var(--color-fortune-mint);
   color: white;
 }
 
@@ -114,11 +114,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 }
 
 .AllChains-chain-selected {
-  background: #e6007a;
+  background: var(--color-fortune-mint);
   color: white;
 }
 
 .AllChains-chain-selected .AllChains-node-count {
   background: white;
-  color: #e6007a;
+  color: var(--color-fortune-mint);
 }

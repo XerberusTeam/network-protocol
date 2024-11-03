@@ -30,6 +30,7 @@ import {
   Update,
 } from './state';
 import { getHashData } from './utils';
+import { Footer } from './components/Footer';
 
 import './App.css';
 
@@ -187,6 +188,7 @@ export default class App extends React.Component {
           sortBy={this.sortBy}
         />
         {overlay}
+        <Footer />
       </div>
     );
   }
