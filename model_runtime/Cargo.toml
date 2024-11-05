@@ -12,7 +12,7 @@ anyhow = "1.0.86"
 arrow = "52.1.0"
 async-trait = "0.1.81"
 chrono = "0.4.38"
-datafusion = "40.0.0"
+datafusion = "42.2.0"
 duckdb = { version = "1.0.0", features = ["bundled"] }
 parquet = "52.1.0"
 polars = { version = "0.41.3", features = ["lazy"] }
