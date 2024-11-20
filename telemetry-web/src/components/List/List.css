@@ -20,6 +20,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
   /* Prevents the list from auto-scrolling while cascading node
    * updates on new block, which helps with performance. */
   overflow-anchor: none;
+  position: relative;
+  overflow-y: auto;
+  max-height: calc(100vh - 200px);
 }
 
 .List-no-nodes {
@@ -38,4 +41,28 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
   width: 100%;
   border-spacing: 0;
   font-family: monospace, sans-serif;
+  table-layout: fixed;
+  position: relative;
+}
+
+.List--table thead {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--background-color);
+}
+
+.List--table thead tr {
+  position: sticky;
+  top: 0;
+}
+
+.List--table thead::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: rgba(0, 0, 0, 0.1);
 }
