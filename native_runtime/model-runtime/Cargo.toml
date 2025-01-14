@@ -1,0 +1,19 @@
+[package]
+name = "model-runtime"
+version = "0.1.0"
+edition = "2021"
+authors = ["Evangelos Pappas <epappas@evalonlabs.com>"]
+
+[lib]
+name = "model_runtime"
+crate-type = ["cdylib", "rlib"]
+
+[package.metadata.maturin]
+name = "model_runtime"
+
+[dependencies]
+pyo3 = { version = "0.23.3", features = ["extension-module"] }
+
+[profile.release]
+codegen-units = 1
+lto = true

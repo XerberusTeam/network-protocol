@@ -1,0 +1,53 @@
+
+[project]
+name = "model-runtime"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = []
+
+[build-system]
+requires = ["maturin>=1,<2"]
+build-backend = "maturin"
+
+[tool.uv]
+dev-dependencies = [
+  "nox>=2024.10.9",
+  "pytest>=8.3.4",
+  "pytest-cov>=6.0.0",
+  "pytest-mock>=3.0.0",
+  "pytest-xdist>=3.0.0",
+  "black>=24.10.0",
+  "pylint>=3.3.3",
+  "python-dotenv>=1.0.1",
+  "pytest-black>=0.6.0",
+]
+
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[tool.isort]
+profile = "black"
+
+[tool.ruff]
+exclude = ["src/*", ".git", "docs"]
+
+[tool.ruff.mccabe]
+max-complexity = 10
+
+[tool.black]
+target-version = ['py311']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
