@@ -1,0 +1,188 @@
+version: "3.9"
+
+volumes:
+  xerberus_nodes_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/local-chain-state
+
+services:
+  xerberus-bootnode:
+    container_name: "xerberus-bootnode"
+    image: xerberus-node-v2:latest
+    restart: unless-stopped
+    command: |
+      --base-path /data/nodes/xerberus-bootnode
+      --chain /data/chain-spec-raw.json
+      --name node_xerberus_io
+      --node-key 1ec1cc5c72a2104f4933b6968d4d22cc286d278b11adbeabc416f14794e2884c
+      --public-addr /ip4/172.28.0.2/tcp/30333/ws/p2p/12D3KooWPQJkTNMGQrjE9wTgGV98Ss5QEViorpysieDSTqS9ipri
+      --telemetry-url "wss://telemetry.polkadot.io/submit/ 0"
+      --rpc-port 9933
+      --port 30333
+      --rpc-cors all
+      --rpc-external
+      --rpc-methods Unsafe
+      --prometheus-external
+      --allow-private-ip
+    ports:
+      - "30333:30333"
+      - "9933:9933"
+      - "9944:9944"
+      - "9615:9615"
+    environment:
+      - RUST_LOG=afg=trace,grandpa=debug,libp2p=debug,sub-libp2p=debug,sync=debug
+    volumes:
+      - xerberus_nodes_data:/data
+    networks:
+      customnet:
+        ipv4_address: 172.28.0.2
+
+  xerberus-validator-1:
+    container_name: "xerberus-validator-1"
+    image: xerberus-node-v2:latest
+    restart: unless-stopped
+    depends_on:
+      - xerberus-bootnode
+    command: |
+      --base-path /data/nodes/xerberus-validator-1
+      --chain /data/chain-spec-raw.json
+      --validator
+      --rpc-external
+      --rpc-methods Unsafe
+      --rpc-cors all
+      --name xerberus_validator_1
+      --node-key e9d6a82a1c3b4e08bf8d925a069949a1316a3cc218119b9121d58179127186a1
+      --bootnodes /ip4/172.28.0.2/tcp/30333/ws/p2p/12D3KooWPQJkTNMGQrjE9wTgGV98Ss5QEViorpysieDSTqS9ipri
+      --telemetry-url "wss://telemetry.polkadot.io/submit/ 0"
+      --rpc-port 9933
+      --port 30333
+      --prometheus-external
+      --allow-private-ip
+      --offchain-worker always
+    ports:
+      - "30334:30333"
+      - "9934:9933"
+      - "9945:9944"
+      - "9616:9615"
+    environment:
+      - RUST_LOG=afg=trace,grandpa=debug,libp2p=debug,sub-libp2p=debug,sync=debug
+    volumes:
+      - xerberus_nodes_data:/data
+    networks:
+      customnet:
+        ipv4_address: 172.28.0.3
+
+  xerberus-validator-2:
+    container_name: "xerberus-validator-2"
+    image: xerberus-node-v2:latest
+    restart: unless-stopped
+    depends_on:
+      - xerberus-bootnode
+    command: |
+      --base-path /data/nodes/xerberus-validator-2
+      --chain /data/chain-spec-raw.json
+      --validator
+      --rpc-external
+      --rpc-methods Unsafe
+      --rpc-cors all
+      --name xerberus_validator_2
+      --node-key 83d776b5237d8b860194963b7146368cbf36bacfbae3417b16acd0690329977d
+      --bootnodes /ip4/172.28.0.2/tcp/30333/ws/p2p/12D3KooWPQJkTNMGQrjE9wTgGV98Ss5QEViorpysieDSTqS9ipri
+      --telemetry-url "wss://telemetry.polkadot.io/submit/ 0"
+      --rpc-port 9933
+      --port 30333
+      --prometheus-external
+      --allow-private-ip
+      --offchain-worker always
+    ports:
+      - "30335:30333"
+      - "9935:9933"
+      - "9946:9944"
+      - "9617:9615"
+    environment:
+      - RUST_LOG=afg=trace,grandpa=debug,libp2p=debug,sub-libp2p=debug,sync=debug
+    volumes:
+      - xerberus_nodes_data:/data
+    networks:
+      customnet:
+        ipv4_address: 172.28.0.4
+
+  xerberus-validator-3:
+    container_name: "xerberus-validator-3"
+    image: xerberus-node-v2:latest
+    restart: unless-stopped
+    depends_on:
+      - xerberus-bootnode
+    command: |
+      --base-path /data/nodes/xerberus-validator-3
+      --chain /data/chain-spec-raw.json
+      --validator
+      --rpc-external
+      --rpc-methods Unsafe
+      --rpc-cors all
+      --name xerberus_validator_3
+      --node-key 7c57477ab29ba4eb3953e0628735e7295eedd8b94e9e8c91a584244747060836
+      --bootnodes /ip4/172.28.0.2/tcp/30333/ws/p2p/12D3KooWPQJkTNMGQrjE9wTgGV98Ss5QEViorpysieDSTqS9ipri
+      --telemetry-url "wss://telemetry.polkadot.io/submit/ 0"
+      --rpc-port 9933
+      --port 30333
+      --prometheus-external
+      --allow-private-ip
+      --offchain-worker always
+    ports:
+      - "30336:30333"
+      - "9936:9933"
+      - "9947:9944"
+      - "9618:9615"
+    environment:
+      - RUST_LOG=afg=trace,grandpa=debug,libp2p=debug,sub-libp2p=debug,sync=debug
+    volumes:
+      - xerberus_nodes_data:/data
+    networks:
+      customnet:
+        ipv4_address: 172.28.0.5
+
+  xerberus-lightnode:
+    container_name: "xerberus-lightnode"
+    image: xerberus-node-v2:latest
+    restart: unless-stopped
+    depends_on:
+      - xerberus-bootnode
+    command: |
+      --base-path /data/nodes/xerberus-lightnode
+      --chain /data/chain-spec-raw.json
+      --name xerberus_lightnode
+      --node-key dd5d2d6150daca485f47af262b2bf71bd8d6264e8c8522225f2946759231ee58
+      --bootnodes /ip4/172.28.0.2/tcp/30333/ws/p2p/12D3KooWPQJkTNMGQrjE9wTgGV98Ss5QEViorpysieDSTqS9ipri
+      --telemetry-url "wss://telemetry.polkadot.io/submit/ 0"
+      --rpc-port 9933
+      --port 30333
+      --rpc-cors all
+      --rpc-external
+      --rpc-methods Unsafe
+      --prometheus-external
+      --allow-private-ip
+      --offchain-worker always
+    ports:
+      - "30400:30333"
+      - "9960:9933"
+      - "9948:9944"
+      - "9619:9615"
+    environment:
+      - RUST_LOG=afg=trace,grandpa=debug,libp2p=debug,sub-libp2p=debug,sync=debug
+    volumes:
+      - xerberus_nodes_data:/data
+    networks:
+      customnet:
+        ipv4_address: 172.28.0.6
+
+networks:
+  customnet:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
+          gateway: 172.28.0.1

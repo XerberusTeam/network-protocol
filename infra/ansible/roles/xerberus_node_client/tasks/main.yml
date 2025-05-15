@@ -21,14 +21,14 @@
 - name: Create required directories
   ansible.builtin.file:
     path: "{{ item }}"
-    mode: "0600"
+    mode: "0777"
     state: directory
   loop: "{{ xerberus_dir_paths }}"
 
 - name: Find all pre-existing docker compose files to cleanup
   ansible.builtin.find:
     paths: "{{ xerberus_docker_compose_path }}"
-    patterns: "*.yml"
+    patterns: "*.yml,*.yaml"
     recurse: true
   register: cleanup_docker_compose_files
   ignore_errors: true
@@ -39,20 +39,27 @@
     state: absent
   loop: "{{ cleanup_docker_compose_files.files }}"
 
-- name: Copy docker-compose files for node client
-  ansible.builtin.template:
-    src: "{{ item.src }}"
-    dest: "{{ item.dest }}"
+- name: Copy full node docker-compose file
+  ansible.builtin.copy:
+    src: "/home/ak_xerberus_io/scripts/testnet.compose.yaml"
+    dest: "{{ xerberus_docker_compose_path }}/docker-compose.yaml"
     mode: "0600"
-  loop:
-    - src: xerberus-node-client.yml.j2
-      dest: "{{ xerberus_docker_compose_path }}/xerberus-node-client.yml"
+    remote_src: yes
+  when: node_type == "full"
+
+- name: Copy light node docker-compose file
+  ansible.builtin.copy:
+    src: "/home/ak_xerberus_io/scripts/join-testnet.compose.yaml"
+    dest: "{{ xerberus_docker_compose_path }}/docker-compose.yaml"
+    mode: "0600"
+    remote_src: yes
+  when: node_type == "light"
 
 # Generate a list of docker-compose files to start the stack
 - name: Find all docker-compose files
   ansible.builtin.find:
     paths: "{{ xerberus_docker_compose_path }}"
-    patterns: "*.yml"
+    patterns: "*.yml,*.yaml"
     recurse: true
   register: docker_compose_files
 
@@ -67,11 +74,5 @@
     project_src: "{{ xerberus_docker_compose_path }}"
     files: "{{ docker_compose_files.files | map(attribute='path') | list }}"
     remove_orphans: true
-    # docker_host: "unix:///var/run/docker.sock"
-    # docker_host: "tcp://localhost:2375"
     state: present
-    # debug: true
-  # environment:
-  # DOCKER_HOST: "unix:///var/run/docker.sock"
-  # DOCKER_HOST: "tcp://localhost:2375"
   become: true

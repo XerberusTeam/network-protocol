@@ -38,13 +38,33 @@ output_ssh:
 output_scp:
 	terraform -chdir=terraform/ output iap_scp_command
 
-ansible_provision: make_rsync trigger_docker_pull trigger_ansible
+output_lightnode_scp:
+	terraform -chdir=terraform/ output iap_lightnode_scp_command
+
+output_scripts_scp:
+	terraform -chdir=terraform/ output scripts_scp_command
+
+output_lightnode_scripts_scp:
+	terraform -chdir=terraform/ output lightnode_scripts_scp_command
 
 make_rsync:
 	./scripts/rsync.sh
 
+make_lightnode_rsync:
+	./scripts/lightnode.rsync.sh
+
 trigger_docker_pull:
-	./scripts/ssh.sh "docker pull ghcr.io/xerberusteam/xerberus-node:full-node-latest"
+	./scripts/ssh.sh "docker pull ghcr.io/xerberusteam/xerberus-node-v2:full-node-latest"
+
+trigger_lightnode_docker_pull:
+	./scripts/lightnode.ssh.sh "docker pull ghcr.io/xerberusteam/xerberus-node-v2:light-node-latest"
 
 trigger_ansible:
 	./scripts/ssh.sh ./ansible/scripts/03-provision.sh
+
+trigger_lightnode_ansible:
+	./scripts/lightnode.ssh.sh ./ansible/scripts/03-provision.sh
+
+ansible_provision: make_rsync trigger_docker_pull trigger_ansible
+
+lightnode_ansible_provision: make_lightnode_rsync trigger_lightnode_docker_pull trigger_lightnode_ansible

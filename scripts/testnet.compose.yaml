@@ -1,0 +1,156 @@
+version: "3.9"
+
+volumes:
+  xerberus_nodes_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/xerberus/data/nodes
+
+services:
+  xerberus-bootnode:
+    container_name: "xerberus-bootnode"
+    image: ghcr.io/xerberusteam/xerberus-node-v2:full-node-latest
+    pull_policy: always
+    restart: unless-stopped
+    command: |
+      --base-path /data/nodes/xerberus-bootnode
+      --chain /data/chain-spec-raw.json
+      --name node_xerberus_io
+      --node-key cfc888602fc153d17d7de0f6dabd68d9c617a6cf9b34a0712c4d52a2a3508e9e
+      --public-addr /dns/node-v2.xerberus.io/tcp/30333/ws/p2p/12D3KooWCYKbsQw2r5575MA8YqMhn8AqhVuZkfobPMyoKzEP595t
+      --rpc-port 9933
+      --port 30333
+      --rpc-cors all
+      --rpc-external
+      --rpc-methods safe
+      --prometheus-external
+      --no-private-ip
+    ports:
+      - "30333:30333"
+      - "9933:9933"
+      - "9944:9944"
+      - "9615:9615"
+    environment:
+      - RUST_LOG=info,libp2p=debug,sub-libp2p=debug,sync=debug,gossip=debug,peerset=debug,network=debug,libp2p_identify=trace
+    volumes:
+      - xerberus_nodes_data:/data
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+        env: "NODE=xerberus-bootnode"
+        tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'
+
+  xerberus-validator-1:
+    container_name: "xerberus-validator-1"
+    image: ghcr.io/xerberusteam/xerberus-node-v2:full-node-latest
+    pull_policy: always
+    restart: unless-stopped
+    depends_on:
+      - xerberus-bootnode
+    command: |
+      --base-path /data/nodes/xerberus-validator-1
+      --chain /data/chain-spec-raw.json
+      --validator
+      --rpc-external
+      --rpc-methods Unsafe
+      --rpc-cors all
+      --name xerberus_validator_1
+      --node-key e9d6a82a1c3b4e08bf8d925a069949a1316a3cc218119b9121d58179127186a1
+      --bootnodes /dns/node-v2.xerberus.io/tcp/30333/ws/p2p/12D3KooWCYKbsQw2r5575MA8YqMhn8AqhVuZkfobPMyoKzEP595t/p2p/12D3KooWCYKbsQw2r5575MA8YqMhn8AqhVuZkfobPMyoKzEP595t
+      --rpc-port 9933
+      --port 30333
+      --prometheus-external
+      --offchain-worker always
+      --allow-private-ip
+    ports:
+      - "30334:30333"
+      - "9934:9933"
+      - "9945:9944"
+      - "9616:9615"
+    volumes:
+      - xerberus_nodes_data:/data
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+        env: "NODE=xerberus-validator-1"
+        tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'
+
+  xerberus-validator-2:
+    container_name: "xerberus-validator-2"
+    image: ghcr.io/xerberusteam/xerberus-node-v2:full-node-latest
+    pull_policy: always
+    restart: unless-stopped
+    depends_on:
+      - xerberus-bootnode
+    command: |
+      --base-path /data/nodes/xerberus-validator-2
+      --chain /data/chain-spec-raw.json
+      --validator
+      --rpc-external
+      --rpc-methods Unsafe
+      --rpc-cors all
+      --name xerberus_validator_2
+      --node-key 83d776b5237d8b860194963b7146368cbf36bacfbae3417b16acd0690329977d
+      --bootnodes /dns/node-v2.xerberus.io/tcp/30333/ws/p2p/12D3KooWCYKbsQw2r5575MA8YqMhn8AqhVuZkfobPMyoKzEP595t/p2p/12D3KooWCYKbsQw2r5575MA8YqMhn8AqhVuZkfobPMyoKzEP595t
+      --rpc-port 9933
+      --port 30333
+      --prometheus-external
+      --offchain-worker always
+      --allow-private-ip
+    ports:
+      - "30335:30333"
+      - "9935:9933"
+      - "9946:9944"
+      - "9617:9615"
+    volumes:
+      - xerberus_nodes_data:/data
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+        env: "NODE=xerberus-validator-2"
+        tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'
+
+  xerberus-validator-3:
+    container_name: "xerberus-validator-3"
+    image: ghcr.io/xerberusteam/xerberus-node-v2:full-node-latest
+    pull_policy: always
+    restart: unless-stopped
+    depends_on:
+      - xerberus-bootnode
+    command: |
+      --base-path /data/nodes/xerberus-validator-3
+      --chain /data/chain-spec-raw.json
+      --validator
+      --rpc-external
+      --rpc-methods Unsafe
+      --rpc-cors all
+      --name xerberus_validator_3
+      --node-key 7c57477ab29ba4eb3953e0628735e7295eedd8b94e9e8c91a584244747060836
+      --bootnodes /dns/node-v2.xerberus.io/tcp/30333/ws/p2p/12D3KooWCYKbsQw2r5575MA8YqMhn8AqhVuZkfobPMyoKzEP595t/p2p/12D3KooWCYKbsQw2r5575MA8YqMhn8AqhVuZkfobPMyoKzEP595t
+      --rpc-port 9933
+      --port 30333
+      --prometheus-external
+      --offchain-worker always
+      --allow-private-ip
+    ports:
+      - "30336:30333"
+      - "9936:9933"
+      - "9947:9944"
+      - "9618:9615"
+    volumes:
+      - xerberus_nodes_data:/data
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+        env: "NODE=xerberus-validator-3"
+        tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'

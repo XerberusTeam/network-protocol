@@ -47,13 +47,11 @@ resource "google_compute_firewall" "allow_protocol" {
 
   allow {
     protocol = "tcp"
+  
     ports = [
-      "9615",
-      "9930",
-      "9333",
-      "9944",
       "30333",
-      "30334",
+      "9933",
+      "9615"
     ]
   }
 

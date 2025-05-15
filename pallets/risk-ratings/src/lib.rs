@@ -1,213 +1,383 @@
-// We make sure this pallet uses `no_std` for compiling to Wasm.
+//! # Risk Ratings Pallet
+//!
+//! A FRAME pallet for managing asset risk ratings and scores. This pallet allows:
+//! - Creating and managing assets
+//! - Adding risk scores to assets
+//! - Querying asset information and scores
+//!
+//! ## Overview
+//!
+//! The pallet implements a risk rating system where:
+//! 1. Assets can be created with basic information
+//! 2. Risk scores can be added to assets over time
+//! 3. Historical scores are maintained for analysis
+//!
+//! ## Storage
+//! - Assets: Map of asset IDs to Asset structs
+//! - AssetScores: Map of asset IDs to their historical scores
+//! - NextAssetId: Counter for generating unique asset IDs
+//!
+//! ## Extrinsics
+//! - create_asset: Create a new asset
+//! - remove_asset: Remove an existing asset
+//! - add_score: Add a risk score to an asset
+
 #![cfg_attr(not(feature = "std"), no_std)]
 
-// Re-export pallet items so that they can be accessed from the crate namespace.
 pub use pallet::*;
 
-// Every callable function or "dispatchable" a pallet exposes must have weight values that correctly
-// estimate a dispatchable's execution time. The benchmarking module is used to calculate weights
-// for each dispatchable and generates this pallet's weight.rs file. Learn more about benchmarking here: https://docs.substrate.io/test/benchmark/
-#[cfg(feature = "runtime-benchmarks")]
-mod benchmarking;
 pub mod weights;
 pub use weights::*;
 
-// All pallet logic is defined in its own module and must be annotated by the `pallet` attribute.
+// #[cfg(feature = "std")]
+pub mod runtime_apis;
+
 #[frame_support::pallet]
 pub mod pallet {
-	// Import various useful types required by all FRAME pallets.
-	use super::*;
-	use frame_support::pallet_prelude::*;
-	use frame_system::pallet_prelude::*;
+    use super::*;
+    use frame_support::pallet_prelude::*;
+    use frame_system::pallet_prelude::*;
+    use sp_runtime::traits::SaturatedConversion;
+    use sp_std::prelude::*;
+    
+    // Import necessary std-like types for no_std environment
+    #[cfg(feature = "std")]
+    use std::string::String;
+    #[cfg(feature = "std")]
+    use std::format;
+    #[cfg(not(feature = "std"))]
+    use scale_info::prelude::string::String;
+    #[cfg(not(feature = "std"))]
+    use scale_info::prelude::format;
 
-	// The `Pallet` struct serves as a placeholder to implement traits, methods and dispatchables
-	// (`Call`s) in this pallet.
-	#[pallet::pallet]
-	pub struct Pallet<T>(_);
+    /// Struct representing an asset in the system
+    /// This is the main data structure stored in the Assets storage map
+    #[derive(Clone, Encode, Decode, PartialEq, RuntimeDebug, TypeInfo, MaxEncodedLen)]
+    pub struct Asset<AccountId> {
+        /// Unique identifier for the asset
+        pub id: u32,
+        /// Name of the asset (bounded to prevent storage abuse)
+        pub name: BoundedVec<u8, ConstU32<100>>,
+        /// Symbol/ticker of the asset (bounded to prevent storage abuse)
+        pub symbol: BoundedVec<u8, ConstU32<10>>,
+        /// Description of the asset (bounded to prevent storage abuse)
+        pub description: BoundedVec<u8, ConstU32<500>>,
+        /// The account that created this asset
+        pub creator: AccountId,
+        /// Timestamp when the asset was created (block number)
+        pub created_at: u32,
+    }
 
-	/// The pallet's configuration trait.
-	///
-	/// All our types and constants a pallet depends on must be declared here.
-	/// These types are defined generically and made concrete when the pallet is declared in the
-	/// `runtime/src/lib.rs` file of your chain.
-	#[pallet::config]
-	pub trait Config: frame_system::Config {
-		/// The overarching runtime event type.
-		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
-		/// A type representing the weights required by the dispatchables of this pallet.
-		type WeightInfo: WeightInfo;
-	}
+    /// Struct representing a single risk score entry for an asset
+    /// This is stored in the AssetScores storage map
+    #[derive(Clone, Encode, Decode, PartialEq, RuntimeDebug, TypeInfo, MaxEncodedLen)]
+    pub struct ScoreEntry {
+        /// The risk score value
+        pub score: u32,
+        /// Block number when the score was recorded
+        pub timestamp: u32,
+        /// Additional metadata about the score (bounded to prevent storage abuse)
+        pub metadata: BoundedVec<u8, ConstU32<200>>,
+    }
 
-	/// A storage item for this pallet.
-	///
-	/// In this template, we are declaring a storage item called `Something` that stores a single
-	/// `u32` value. Learn more about runtime storage here: <https://docs.substrate.io/build/runtime-storage/>
-	#[pallet::storage]
-	pub type Something<T> = StorageValue<_, u32>;
+    /// Bounded vector of score entries with a maximum length
+    /// This is used to limit the number of scores stored per asset
+    #[derive(Clone, Encode, Decode, PartialEq, RuntimeDebug, TypeInfo, MaxEncodedLen)]
+    pub struct BoundedScoreEntries(pub BoundedVec<ScoreEntry, ConstU32<1000>>);
 
-	#[pallet::storage]
-	#[pallet::getter(fn risk_ratings)]
-	pub type RiskRatings<T: Config> = StorageNMap<
-		_,
-		(
-			NMapKey<Blake2_128Concat, T::AccountId>, // User Account
-			NMapKey<Blake2_128Concat, u32>,          // shardId
-			NMapKey<Blake2_128Concat, u32>,          // ChainId
-			NMapKey<Blake2_128Concat, u32>,          // BlockId
-			NMapKey<Blake2_128Concat, u32>,          // Token
-			NMapKey<Blake2_128Concat, u32>,          // Model Hash
-		),
-		u32, // Risk Rating Value
-	>;
+    /// The pallet's configuration trait
+    /// This is where we declare types and constants that the pallet depends on
+    #[pallet::pallet]
+    pub struct Pallet<T>(_);
 
-	#[pallet::storage]
-	#[pallet::getter(fn latest_risk_ratings)]
-	pub type LatestRiskRatings<T: Config> = StorageNMap<
-		_,
-		(
-			NMapKey<Blake2_128Concat, u32>, // ChainId
-			NMapKey<Blake2_128Concat, u32>, // Token
-		),
-		u32, // Risk Rating Value
-	>;
+    #[pallet::config]
+    pub trait Config: frame_system::Config {
+        /// The type that will be used for Event variants
+        type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
+        /// Type for weight information
+        type WeightInfo: WeightInfo;
+    }
 
-	/// Events that functions in this pallet can emit.
-	///
-	/// Events are a simple means of indicating to the outside world (such as dApps, chain explorers
-	/// or other users) that some notable update in the runtime has occurred. In a FRAME pallet, the
-	/// documentation for each event field and its parameters is added to a node's metadata so it
-	/// can be used by external interfaces or tools.
-	///
-	///	The `generate_deposit` macro generates a function on `Pallet` called `deposit_event` which
-	/// will convert the event type of your pallet into `RuntimeEvent` (declared in the pallet's
-	/// [`Config`] trait) and deposit it using [`frame_system::Pallet::deposit_event`].
-	#[pallet::event]
-	#[pallet::generate_deposit(pub(super) fn deposit_event)]
-	pub enum Event<T: Config> {
-		/// A user has successfully set a new value.
-		SomethingStored {
-			/// The new value set.
-			something: u32,
-			/// The account who set the new value.
-			who: T::AccountId,
-		},
+    /// Storage for all assets
+    /// Uses Blake2_128Concat hasher for efficient key-value storage
+    #[pallet::storage]
+    pub type Assets<T: Config> = StorageMap<_, Blake2_128Concat, u32, Asset<T::AccountId>>;
 
-		/// A risk rating has been successfully set.
-		RiskRatingSet {
-			/// The user account.
-			account: T::AccountId,
-			/// The shard ID.
-			shard_id: u32,
-			/// The chain ID.
-			chain_id: u32,
-			/// The Block ID.
-			block_id: u32,
-			/// The token.
-			token: u32,
-			/// The Model Hash.
-			model_hash: u32,
-			/// The new risk rating value.
-			risk_rating: u32,
-		},
-	}
+    /// Counter for generating unique asset IDs
+    /// Starts at 0 and increments for each new asset
+    #[pallet::storage]
+    pub type NextAssetId<T> = StorageValue<_, u32, ValueQuery>;
 
-	/// Errors that can be returned by this pallet.
-	///
-	/// Errors tell users that something went wrong so it's important that their naming is
-	/// informative. Similar to events, error documentation is added to a node's metadata so it's
-	/// equally important that they have helpful documentation associated with them.
-	///
-	/// This type of runtime error can be up to 4 bytes in size should you want to return additional
-	/// information.
-	#[pallet::error]
-	pub enum Error<T> {
-		/// The value retrieved was `None` as no value was previously set.
-		NoneValue,
-		/// There was an attempt to increment the value in storage over `u32::MAX`.
-		StorageOverflow,
-	}
+    /// Storage for asset scores (time series data)
+    /// Maps asset IDs to their historical scores
+    #[pallet::storage]
+    pub type AssetScores<T> = StorageMap<_, Blake2_128Concat, u32, BoundedScoreEntries>;
 
-	/// The pallet's dispatchable functions ([`Call`]s).
-	///
-	/// Dispatchable functions allows users to interact with the pallet and invoke state changes.
-	/// These functions materialize as "extrinsics", which are often compared to transactions.
-	/// They must always return a `DispatchResult` and be annotated with a weight and call index.
-	///
-	/// The [`call_index`] macro is used to explicitly
-	/// define an index for calls in the [`Call`] enum. This is useful for pallets that may
-	/// introduce new dispatchables over time. If the order of a dispatchable changes, its index
-	/// will also change which will break backwards compatibility.
-	///
-	/// The [`weight`] macro is used to assign a weight to each call.
-	#[pallet::call]
-	impl<T: Config> Pallet<T> {
-		/// An example dispatchable that takes a single u32 value as a parameter, writes the value
-		/// to storage and emits an event.
-		///
-		/// It checks that the _origin_ for this call is _Signed_ and returns a dispatch
-		/// error if it isn't. Learn more about origins here: <https://docs.substrate.io/build/origins/>
-		#[pallet::call_index(0)]
-		#[pallet::weight(T::WeightInfo::do_something())]
-		pub fn do_something(origin: OriginFor<T>, something: u32) -> DispatchResult {
-			// Check that the extrinsic was signed and get the signer.
-			let who = ensure_signed(origin)?;
+    /// Events emitted by this pallet
+    /// These help external entities track what happened in the chain
+    #[pallet::event]
+    #[pallet::generate_deposit(pub(super) fn deposit_event)]
+    pub enum Event<T: Config> {
+        /// Emitted when a new asset is created
+        AssetCreated {
+            asset_id: u32,
+            creator: T::AccountId,
+        },
+        /// Emitted when an asset is removed
+        AssetRemoved {
+            asset_id: u32,
+            remover: T::AccountId,
+        },
+        /// Emitted when a new score is added for an asset
+        ScoreAdded {
+            asset_id: u32,
+            score: u32,
+            timestamp: u32,
+        },
+    }
 
-			// Update storage.
-			Something::<T>::put(something);
+    /// Custom errors that can occur in this pallet
+    #[pallet::error]
+    pub enum Error<T> {
+        /// Asset not found in storage
+        AssetNotFound,
+        /// Not authorized to perform the action
+        NotAuthorized,
+        /// Asset name exceeds maximum length
+        NameTooLong,
+        /// Asset symbol exceeds maximum length
+        SymbolTooLong,
+        /// Asset description exceeds maximum length
+        DescriptionTooLong,
+        /// Score metadata exceeds maximum length
+        MetadataTooLong,
+        /// Maximum number of assets reached (u32 overflow)
+        AssetIdOverflow,
+        /// Maximum number of scores reached for an asset
+        MaxScoresReached,
+    }
 
-			// Emit an event.
-			Self::deposit_event(Event::SomethingStored { something, who });
+    /// Dispatchable functions (callable extrinsics)
+    /// These are the functions that users can call to interact with the pallet
+    #[pallet::call]
+    impl<T: Config> Pallet<T> {
+        /// Create a new asset
+        /// This is an extrinsic that can be called by any signed account
+        #[pallet::call_index(0)]
+        #[pallet::weight(T::WeightInfo::do_something())]
+        pub fn create_asset(
+            origin: OriginFor<T>,
+            name: Vec<u8>,
+            symbol: Vec<u8>,
+            description: Vec<u8>,
+        ) -> DispatchResult {
+            // Verify the caller is a signed account
+            let creator = ensure_signed(origin)?;
 
-			// Return a successful `DispatchResult`
-			Ok(())
-		}
+            // Convert inputs to bounded vectors to prevent storage abuse
+            let bounded_name = BoundedVec::<u8, ConstU32<100>>::try_from(name)
+                .map_err(|_| Error::<T>::NameTooLong)?;
+            let bounded_symbol = BoundedVec::<u8, ConstU32<10>>::try_from(symbol)
+                .map_err(|_| Error::<T>::SymbolTooLong)?;
+            let bounded_description = BoundedVec::<u8, ConstU32<500>>::try_from(description)
+                .map_err(|_| Error::<T>::DescriptionTooLong)?;
 
-		#[pallet::call_index(1)]
-		#[pallet::weight(T::WeightInfo::set_risk_rating())]
-		pub fn set_risk_rating(
-			origin: OriginFor<T>,
-			shard_id: u32,
-			chain_id: u32,
-			block_id: u32,
-			token: u32,
-			model_hash: u32,
-			risk_rating: u32,
-		) -> DispatchResult {
-			// Check that the extrinsic was signed and get the signer.
-			let who = ensure_signed(origin)?;
+            // Get and increment the next asset ID
+            let asset_id = NextAssetId::<T>::get();
+            let next_asset_id = asset_id.checked_add(1).ok_or(Error::<T>::AssetIdOverflow)?;
 
-			// Update storage.
-			RiskRatings::<T>::insert(
-				(&who, shard_id, chain_id, block_id, token, model_hash),
-				risk_rating,
-			);
+            // Create the new asset
+            let asset = Asset {
+                id: asset_id,
+                name: bounded_name,
+                symbol: bounded_symbol,
+                description: bounded_description,
+                creator: creator.clone(),
+                created_at: frame_system::Pallet::<T>::block_number().saturated_into::<u32>(),
+            };
 
-			// Update latest risk ratings.
-			LatestRiskRatings::<T>::insert((chain_id, token), risk_rating);
+            // Store the asset
+            Assets::<T>::insert(asset_id, asset);
+            NextAssetId::<T>::put(next_asset_id);
 
-			// Emit an event.
-			Self::deposit_event(Event::RiskRatingSet {
-				account: who,
-				shard_id,
-				chain_id,
-				block_id,
-				token,
-				model_hash,
-				risk_rating,
-			});
+            // Initialize empty scores vector
+            AssetScores::<T>::insert(asset_id, BoundedScoreEntries(BoundedVec::new()));
 
-			// Return a successful `DispatchResult`
-			Ok(())
-		}
-	}
+            // Emit event
+            Self::deposit_event(Event::AssetCreated { asset_id, creator });
+
+            Ok(())
+        }
+
+        /// Remove an asset
+        /// This is an extrinsic that can only be called by the asset creator
+        #[pallet::call_index(1)]
+        #[pallet::weight(T::WeightInfo::do_something())]
+        pub fn remove_asset(origin: OriginFor<T>, asset_id: u32) -> DispatchResult {
+            // Verify the caller is a signed account
+            let who = ensure_signed(origin)?;
+
+            // Get the asset and verify ownership
+            let asset = Assets::<T>::get(asset_id).ok_or(Error::<T>::AssetNotFound)?;
+            ensure!(asset.creator == who, Error::<T>::NotAuthorized);
+
+            // Remove the asset and its scores
+            Assets::<T>::remove(asset_id);
+            AssetScores::<T>::remove(asset_id);
+
+            Self::deposit_event(Event::AssetRemoved {
+                asset_id,
+                remover: who,
+            });
+
+            Ok(())
+        }
+
+        /// Add a new score for an asset
+        /// This is an extrinsic that can be called by any signed account
+        #[pallet::call_index(2)]
+        #[pallet::weight(T::WeightInfo::do_something())]
+        pub fn add_score(
+            origin: OriginFor<T>,
+            asset_id: u32,
+            score: u32,
+            metadata: Vec<u8>,
+        ) -> DispatchResult {
+            // Verify the caller is a signed account
+            ensure_signed(origin)?;
+
+            // Verify asset exists
+            ensure!(
+                Assets::<T>::contains_key(asset_id),
+                Error::<T>::AssetNotFound
+            );
+
+            // Convert metadata to bounded vector
+            let bounded_metadata = BoundedVec::<u8, ConstU32<200>>::try_from(metadata)
+                .map_err(|_| Error::<T>::MetadataTooLong)?;
+
+            // Create new score entry
+            let score_entry = ScoreEntry {
+                score,
+                timestamp: frame_system::Pallet::<T>::block_number().saturated_into::<u32>(),
+                metadata: bounded_metadata,
+            };
+
+            // Update scores storage
+            AssetScores::<T>::try_mutate(asset_id, |scores| -> DispatchResult {
+                let bounded_scores = scores.as_mut().ok_or(Error::<T>::AssetNotFound)?;
+                bounded_scores
+                    .0
+                    .try_push(score_entry)
+                    .map_err(|_| Error::<T>::MaxScoresReached)?;
+                Ok(())
+            })?;
+
+            Self::deposit_event(Event::ScoreAdded {
+                asset_id,
+                score,
+                timestamp: frame_system::Pallet::<T>::block_number().saturated_into::<u32>(),
+            });
+
+            Ok(())
+        }
+    }
+
+    /// Internal implementation of helper functions
+    impl<T: Config> Pallet<T> {
+        /// Format a single asset as a JSON string
+        fn format_asset_as_json(asset: &Asset<T::AccountId>) -> String {
+            // Create a JSON-formatted string
+            let name = String::from_utf8_lossy(&asset.name[..]);
+            let symbol = String::from_utf8_lossy(&asset.symbol[..]);
+            let description = String::from_utf8_lossy(&asset.description[..]);
+            
+            // For the creator field, we need the SS58 address
+            // The debug representation typically includes the SS58 address in parentheses
+            // e.g., "d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d (5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY)"
+            let creator_debug = format!("{:?}", asset.creator);
+            
+            // Extract the complete SS58 address if available
+            let creator_address = match (creator_debug.find('('), creator_debug.find(')')) {
+                (Some(start), Some(end)) if end > start => {
+                    // Extract content between parentheses - this should be the complete address
+                    // Remove leading space if present
+                    creator_debug[start+1..end].trim()
+                },
+                _ => {
+                    // If no parentheses or invalid format, use the full debug string
+                    &creator_debug
+                }
+            };
+            
+            // Create a clean JSON string
+            format!(
+                r#"{{"id": {}, "name": "{}", "symbol": "{}", "description": "{}", "creator": "{}", "createdAt": {}}}"#,
+                asset.id,
+                name,
+                symbol,
+                description,
+                creator_address,
+                asset.created_at
+            )
+        }
+        
+        /// Get asset as JSON-formatted bytes
+        pub fn get_asset_as_json_bytes(asset_id: u32) -> Option<Vec<u8>> {
+            if let Some(asset) = Self::get_asset(asset_id) {
+                let json = Self::format_asset_as_json(&asset);
+                // Option: Remove any stray non-printable characters at the beginning.
+                let cleaned = json.trim_start_matches('\u{feff}'); // removes BOM if present
+                Some(cleaned.as_bytes().to_vec())
+            } else {
+                None
+            }
+        }
+        
+        /// Get all assets as JSON-formatted bytes
+        pub fn get_all_assets_as_json_bytes() -> Vec<u8> {
+            let assets = Self::get_all_assets();
+            
+            // If no assets, return empty array
+            if assets.is_empty() {
+                return "[]".as_bytes().to_vec();
+            }
+            
+            // Format each asset as JSON
+            let mut json_assets = Vec::new();
+            for (_, asset) in assets {
+                json_assets.push(Self::format_asset_as_json(&asset));
+            }
+            
+            // Combine into a JSON array
+            let json_array = format!("[{}]", json_assets.join(","));
+            
+            // Remove any stray non-printable characters
+            let cleaned = json_array.trim_start_matches('\u{feff}');
+            cleaned.as_bytes().to_vec()
+        }
+
+        /// Get all assets from storage
+        pub fn get_all_assets() -> Vec<(u32, Asset<T::AccountId>)> {
+            Assets::<T>::iter().collect()
+        }
+
+        /// Get a specific asset by ID
+        pub fn get_asset(asset_id: u32) -> Option<Asset<T::AccountId>> {
+            Assets::<T>::get(asset_id)
+        }
+
+        /// Get all scores for an asset
+        pub fn get_asset_scores(asset_id: u32) -> Option<Vec<ScoreEntry>> {
+            if let Some(scores) = AssetScores::<T>::get(asset_id) {
+                Some(scores.0.into_inner().into_iter().collect())
+            } else {
+                None
+            }
+        }
+
+        pub fn say_hello() -> Vec<u8> {
+            "Hi from Risk Ratings Pallet!".as_bytes().to_vec()
+        }
+    }
 }
-
-// pub trait WeightInfo {
-// 	fn set_risk_rating() -> Weight;
-// }
-
-// impl WeightInfo for () {
-// 	fn set_risk_rating() -> Weight {
-// 		10_000 // Placeholder weight value
-// 	}
-// }
