@@ -1,0 +1,9 @@
+.nyc
+.nyc_output
+report.20200422.181728.7118.0.001.json
+.env
+node_modules
+build
+coverage
+dist
+*.log

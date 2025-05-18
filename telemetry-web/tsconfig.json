@@ -1,0 +1,39 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "outDir": "./build/",
+    "module": "es2020",
+    "target": "es2015",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "sourceMap": true,
+    "allowJs": false,
+    "jsx": "react",
+    "rootDir": "src",
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "noEmitOnError": false,
+    "pretty": true,
+    "forceConsistentCasingInFileNames": true,
+    "noErrorTruncation": true,
+    "noImplicitReturns": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "strictNullChecks": true,
+    "suppressImplicitAnyIndexErrors": true,
+    "resolveJsonModule": true,
+    "noUnusedParameters": true,
+    "skipLibCheck": true
+  },
+  "exclude": [
+    "node_modules",
+    "build"
+  ],
+  "include": [
+    "src",
+    "declarations/**/*.d.ts"
+  ]
+}

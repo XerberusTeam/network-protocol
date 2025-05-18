@@ -1,0 +1,13 @@
+version: '3.2'
+
+services:
+  telemetry-frontend:
+    container_name: telemetry-frontend
+    image: ghcr.io/karthik-ak-dev/xerberus-node:telemetry-frontend-latest
+    pull_policy: always
+    restart: unless-stopped
+    environment:
+      SUBSTRATE_TELEMETRY_URL: ${SUBSTRATE_TELEMETRY_URL}
+    ports:
+      - '8000:8000'
+    network_mode: host

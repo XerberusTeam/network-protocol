@@ -1,0 +1,32 @@
+.Footer {
+    background-color: var(--color-pure-black);
+    color: #fff;
+    padding: 1rem 0;
+    width: 100%;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+
+}
+
+.Footer-content {
+    margin: 0 auto;
+    padding: 0 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.Footer-links {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.Footer-links a {
+    color: #fff;
+    text-decoration: none;
+}
+
+.Footer-links a:hover {
+    text-decoration: underline;
+}
