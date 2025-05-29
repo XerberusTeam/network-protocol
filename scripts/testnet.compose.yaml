@@ -17,7 +17,7 @@ services:
     command: |
       --base-path /data/nodes/xerberus-bootnode
       --chain /data/chain-spec-raw.json
-      --name node_xerberus_io
+      --name xerberus-bootnode
       --node-key cfc888602fc153d17d7de0f6dabd68d9c617a6cf9b34a0712c4d52a2a3508e9e
       --public-addr /dns/node-v2.xerberus.io/tcp/30333/ws/p2p/12D3KooWCYKbsQw2r5575MA8YqMhn8AqhVuZkfobPMyoKzEP595t
       --rpc-port 9933
@@ -26,7 +26,7 @@ services:
       --rpc-external
       --rpc-methods safe
       --prometheus-external
-      --no-private-ip
+      --allow-private-ip
     ports:
       - "30333:30333"
       - "9933:9933"

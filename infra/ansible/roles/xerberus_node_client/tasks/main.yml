@@ -49,7 +49,7 @@
 
 - name: Copy light node docker-compose file
   ansible.builtin.copy:
-    src: "/home/ak_xerberus_io/scripts/join-testnet.compose.yaml"
+    src: "/home/ak_xerberus_io/scripts/join-testnet.lightnode.compose.yaml"
     dest: "{{ xerberus_docker_compose_path }}/docker-compose.yaml"
     mode: "0600"
     remote_src: yes

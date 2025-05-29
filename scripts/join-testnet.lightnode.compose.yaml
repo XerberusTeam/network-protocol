@@ -6,7 +6,7 @@ volumes:
     driver_opts:
       type: none
       o: bind
-      device: ./xerberus-node/data
+      device: /opt/xerberus/data/nodes
 
 services:
   xerberus-light-node:
@@ -22,8 +22,9 @@ services:
       --rpc-external
       --rpc-methods Unsafe
       --rpc-cors all
-      --name your-xerberus-node
+      --name xerberus_light_node
       --bootnodes /dns/node-v2.xerberus.io/tcp/30333/ws/p2p/12D3KooWCYKbsQw2r5575MA8YqMhn8AqhVuZkfobPMyoKzEP595t/p2p/12D3KooWCYKbsQw2r5575MA8YqMhn8AqhVuZkfobPMyoKzEP595t
+      --public-addr /ip4/34.105.150.187/tcp/30333/ws
       --rpc-port 9933
       --port 30333
       --prometheus-external
