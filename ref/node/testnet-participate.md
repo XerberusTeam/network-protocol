@@ -15,7 +15,7 @@ This guide helps you run a Xerberus light node using Docker Compose. Running a n
 Download the `join-testnet.compose.yaml` file:
 
 ```bash
-# ToDo: karthik to update the branch here, post main merge
+# ToDo: Update the branch here, post main merge
 curl -O https://raw.githubusercontent.com/xerberusteam/network-protocol/version-update/scripts/join-testnet.compose.yaml
 ```
 
