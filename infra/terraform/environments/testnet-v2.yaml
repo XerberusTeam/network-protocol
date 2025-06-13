@@ -1,0 +1,6 @@
+---
+project_id: production-426013
+region: europe-west2
+zone: europe-west2-a
+all_users_iam_binding:
+  - ak@xerberus.io

@@ -5,18 +5,17 @@ terraform {
       version = "~> 5.35.0"
     }
   }
+  
+  backend "gcs" {
+    # bucket = "${local.prefix}-tf-state"
+    bucket = "testnet-v2-xerberus-tf-state"
+    prefix = "terraform/state/xerberus-network-compute"
+  }
 }
 
 provider "google" {
   project = local.project_id
   region  = local.region
-}
-
-terraform {
-  backend "gcs" {
-    bucket = "${local.prefix}-tf-state"
-    prefix = "terraform/state/xerberus-network-compute"
-  }
 }
 
 data "google_project" "project" {}

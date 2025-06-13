@@ -1,7 +1,7 @@
 locals {
   env_file     = "./environments/${terraform.workspace}.yaml"
-  env_name     = terraform.workspace == "default" ? "testnet" : terraform.workspace
-  env_contents = fileexists(local.env_file) ? file(local.env_file) : file("./environments/testnet.yaml")
+  env_name     = terraform.workspace == "default" ? "testnet-v2" : terraform.workspace
+  env_contents = fileexists(local.env_file) ? file(local.env_file) : file("./environments/testnet-v2.yaml")
   settings     = yamldecode(local.env_contents)
   project_id   = local.settings.project_id
   region       = local.settings.region

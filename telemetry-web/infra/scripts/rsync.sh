@@ -1,11 +1,17 @@
 #!/usr/bin/env bash
 
-set -euo pipefail
+set -e
 
 CWD="$(cd "$(dirname "$0")"/.. && pwd)"
 
+# Clean ansible directory on VM and copy it
 $CWD/scripts/ssh.sh rm -rf ./ansible
 
-CMD_STR=$(terraform -chdir=$CWD/terraform/ output iap_scp_command)
-eval CMD=$CMD_STR
-exec $CMD
+# Use -raw flag to avoid issues with quotes
+terraform -chdir=$CWD/terraform/ output -raw iap_scp_command | bash
+
+# Clean scripts directory on VM and copy it
+$CWD/scripts/ssh.sh rm -rf ./scripts
+
+# Use -raw flag to avoid issues with quotes
+terraform -chdir=$CWD/terraform/ output -raw scripts_scp_command | bash

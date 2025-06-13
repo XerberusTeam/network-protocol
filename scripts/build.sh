@@ -29,24 +29,32 @@ done
 
 CONTEXT_DIR=$CWD
 DOCKERFILE="$CWD/Dockerfile"
-VERSION=$(grep '^version\s*=' $CWD/node/Cargo.toml | sed 's/^version\s*=\s*//; s/^"//; s/"$//; s/^'"'"'//; s/'"'"'$//')
+VERSION=$(grep 'version\s*=' "$CWD/node/Cargo.toml" | head -1 | cut -d '"' -f2)
 VERSION_LABEL="full-node-$VERSION"
-VERSION_TAG="ghcr.io/$NAMESPACE/xerberus-node:$VERSION_LABEL"
+VERSION_TAG="ghcr.io/$NAMESPACE/xerberus-node-v2:$VERSION_LABEL"
 LATEST_LABEL="full-node-latest"
-LATEST_TAG="ghcr.io/$NAMESPACE/xerberus-node:$LATEST_LABEL"
+LATEST_TAG="ghcr.io/$NAMESPACE/xerberus-node-v2:$LATEST_LABEL"
+LOCAL_TAG="xerberus-node-v2:latest"
 
-echo building "$VERSION_TAG" from "$DOCKERFILE" in "$CONTEXT_DIR"
-docker build -f "$DOCKERFILE" --platform "$PLATFORM" -t "$VERSION_TAG" "$CONTEXT_DIR" \
-    --label "org.opencontainers.image.title=xerberus-node" \
+echo "Building Docker image with tags:"
+echo "  - $VERSION_TAG"
+echo "  - $LATEST_TAG"
+echo "  - $LOCAL_TAG (for docker-compose)"
+
+# Build once with multiple tags
+docker build -f "$DOCKERFILE" --platform "$PLATFORM" \
+    -t "$VERSION_TAG" \
+    -t "$LATEST_TAG" \
+    -t "$LOCAL_TAG" \
+    "$CONTEXT_DIR" \
+    --label "org.opencontainers.image.title=xerberus-node-v2" \
     --label "org.opencontainers.image.version=$VERSION" \
     --label "org.opencontainers.image.source=https://github.com/xerberusteam/network-protocol" \
-    --label "org.opencontainers.image.description=xerberus-node-full-node" \
+    --label "org.opencontainers.image.description=xerberus-node-v2-full-node" \
     --label "org.opencontainers.image.licenses=Apache-2.0"
 
-echo building "$LATEST_TAG" from "$DOCKERFILE" in "$CONTEXT_DIR"
-docker build -f "$DOCKERFILE" --platform "$PLATFORM" -t "$LATEST_TAG" "$CONTEXT_DIR" \
-    --label "org.opencontainers.image.title=xerberus-node" \
-    --label "org.opencontainers.image.version=$VERSION" \
-    --label "org.opencontainers.image.source=https://github.com/xerberusteam/network-protocol" \
-    --label "org.opencontainers.image.description=xerberus-node-full-node" \
-    --label "org.opencontainers.image.licenses=Apache-2.0"
+echo ""
+echo "Done! Now you can run the local network with:"
+echo "docker-compose -f $CWD/scripts/localnet.compose.yaml up"
+
+# chmod +x scripts/build.sh

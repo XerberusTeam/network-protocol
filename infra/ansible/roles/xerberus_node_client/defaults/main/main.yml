@@ -5,6 +5,8 @@ xerberus_docker_compose_path: "{{ xerberus_root_path }}/xerberus_dc"
 xerberus_dir_paths:
   - "{{ xerberus_root_path }}"
   - "{{ xerberus_root_path }}/scripts"
+  - "{{ xerberus_root_path }}/data"
+  - "{{ xerberus_root_path }}/data/nodes"
   - "{{ xerberus_docker_compose_path }}"
 
 packages:
@@ -37,5 +39,5 @@ allow_ssh: true
 # See documenation for more details: TODO: link to our docs
 host_ip_address_to_bind_to: 0.0.0.0
 
-docker_image: "ghcr.io/xerberusteam/xerberus-node:full-node-latest"
+docker_image: "ghcr.io/xerberusteam/xerberus-node-v2:full-node-latest"
 container_name: "xerberus-full-node"

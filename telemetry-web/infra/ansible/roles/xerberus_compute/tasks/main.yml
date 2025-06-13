@@ -40,13 +40,11 @@
   loop: "{{ cleanup_docker_compose_files.files }}"
 
 - name: Copy docker-compose files
-  ansible.builtin.template:
-    src: "{{ item.src }}"
-    dest: "{{ item.dest }}"
+  ansible.builtin.copy:
+    src: "/home/ak_xerberus_io/scripts/testnet.compose.yaml"
+    dest: "{{ xerberus_docker_compose_path }}/docker-compose.yaml"
     mode: "0600"
-  loop:
-    - src: xerberus-compute.yml.j2
-      dest: "{{ xerberus_docker_compose_path }}/xerberus-compute.yml"
+    remote_src: yes
 
 # Generate a list of docker-compose files to start the stack
 - name: Find all docker-compose files
@@ -67,11 +65,5 @@
     project_src: "{{ xerberus_docker_compose_path }}"
     files: "{{ docker_compose_files.files | map(attribute='path') | list }}"
     remove_orphans: true
-    # docker_host: "unix:///var/run/docker.sock"
-    # docker_host: "tcp://localhost:2375"
     state: present
-    # debug: true
-  # environment:
-  # DOCKER_HOST: "unix:///var/run/docker.sock"
-  # DOCKER_HOST: "tcp://localhost:2375"
   become: true

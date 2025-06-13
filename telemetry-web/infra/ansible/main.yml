@@ -1,6 +1,9 @@
 ---
 - name: Deploy xerberus stack - whole stack per node
-  hosts: xerberus
+  # hosts: xerberus
+  # Since, have used rsync.sh to copy the files to the VM, we need to run the playbook on the VM, Thus hosts: localhost
+  hosts: localhost
+  connection: local
   become: true
 
   vars:
@@ -43,6 +46,3 @@
           - containerd
           - runc
     - role: xerberus_compute
-      vars:
-        xerberus_root_path: /opt/xerberus
-        xerberus_docker_compose_path: '{{ xerberus_root_path }}/xerberus_dc'

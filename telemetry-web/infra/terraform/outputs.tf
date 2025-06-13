@@ -66,3 +66,8 @@ output "load_balancer_ip" {
 output "web_url" {
   value = "https://${google_compute_managed_ssl_certificate.web.managed[0].domains[0]}"
 }
+
+output "scripts_scp_command" {
+  description = "Command to SCP scripts directory into the instance using IAP tunneling"
+  value       = "gcloud compute scp --compress --zone ${local.zone} --tunnel-through-iap --project ${local.project_id} --recurse ../scripts ${google_compute_instance.multiple[0].name}:~/scripts"
+}

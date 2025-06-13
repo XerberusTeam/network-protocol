@@ -65,42 +65,43 @@ resource "google_compute_instance_group" "multiple" {
   zone        = local.zone
 
   instances = google_compute_instance.multiple[*].self_link
+  
+  depends_on = [google_compute_instance.multiple]
 
   named_port {
-    name = "jsonrpc"
-    port = 9944
+    name = "rpc"          # JSON-RPC (both HTTP and WebSocket)
+    port = 9933
   }
 
   named_port {
-    name = "libp2p"
+    name = "p2p"          # libp2p WebSocket transport
     port = 30333
   }
 
   named_port {
-    name = "libp2pws"
-    port = 30334
+    name = "metrics"      # Prometheus metrics
+    port = 9615
   }
 }
 
-resource "google_compute_health_check" "jsonrpc" {
+resource "google_compute_health_check" "rpc" {
   name               = "${local.prefix}-health-check"
   timeout_sec        = 5
   check_interval_sec = 10
 
   tcp_health_check {
-    port = 9944
+    port = 9933        # Health check on the RPC endpoint
   }
 }
 
-resource "google_compute_backend_service" "jsonrpc-tcp" {
-  name        = "${local.prefix}-backend-service"
+resource "google_compute_backend_service" "rpc" {
+  name        = "${local.prefix}-rpc-backend"
   protocol    = "TCP"
-  port_name   = "jsonrpc"
+  port_name   = "rpc"
   timeout_sec = 1800 # 30 minutes, adjust as needed
 
   connection_draining_timeout_sec = 300
 
-  # locality_lb_policy    = "RING_HASH"
   load_balancing_scheme = "EXTERNAL"
   session_affinity      = "CLIENT_IP"
 
@@ -108,18 +109,17 @@ resource "google_compute_backend_service" "jsonrpc-tcp" {
     group = google_compute_instance_group.multiple.self_link
   }
 
-  health_checks = [google_compute_health_check.jsonrpc.self_link]
+  health_checks = [google_compute_health_check.rpc.self_link]
 }
 
-resource "google_compute_backend_service" "jsonrpc-http" {
-  name        = "${local.prefix}-backend-service-over-http"
+resource "google_compute_backend_service" "rpc-http" {
+  name        = "${local.prefix}-rpc-http-backend"
   protocol    = "HTTP"
-  port_name   = "jsonrpc"
+  port_name   = "rpc"
   timeout_sec = 1800 # 30 minutes, adjust as needed
 
   connection_draining_timeout_sec = 300
 
-  # locality_lb_policy    = "RING_HASH"
   load_balancing_scheme = "EXTERNAL"
   session_affinity      = "CLIENT_IP"
 
@@ -127,18 +127,17 @@ resource "google_compute_backend_service" "jsonrpc-http" {
     group = google_compute_instance_group.multiple.self_link
   }
 
-  health_checks = [google_compute_health_check.jsonrpc.self_link]
+  health_checks = [google_compute_health_check.rpc.self_link]
 }
 
-resource "google_compute_backend_service" "libp2p" {
-  name        = "${local.prefix}-backend-service-over-libp2p"
+resource "google_compute_backend_service" "p2p" {
+  name        = "${local.prefix}-p2p-backend"
   protocol    = "TCP"
-  port_name   = "libp2p"
+  port_name   = "p2p"
   timeout_sec = 1800 # 30 minutes, adjust as needed
 
   connection_draining_timeout_sec = 300
 
-  # locality_lb_policy    = "RING_HASH"
   load_balancing_scheme = "EXTERNAL"
   session_affinity      = "CLIENT_IP"
 
@@ -146,18 +145,17 @@ resource "google_compute_backend_service" "libp2p" {
     group = google_compute_instance_group.multiple.self_link
   }
 
-  health_checks = [google_compute_health_check.jsonrpc.self_link]
+  health_checks = [google_compute_health_check.rpc.self_link]
 }
 
-resource "google_compute_backend_service" "libp2pws" {
-  name        = "${local.prefix}-backend-service-over-libp2pws"
+resource "google_compute_backend_service" "metrics" {
+  name        = "${local.prefix}-metrics-backend"
   protocol    = "TCP"
-  port_name   = "libp2pws"
-  timeout_sec = 1800 # 30 minutes, adjust as needed
+  port_name   = "metrics"
+  timeout_sec = 300 # 5 minutes for metrics
 
-  connection_draining_timeout_sec = 300
+  connection_draining_timeout_sec = 60
 
-  # locality_lb_policy    = "RING_HASH"
   load_balancing_scheme = "EXTERNAL"
   session_affinity      = "CLIENT_IP"
 
@@ -165,5 +163,5 @@ resource "google_compute_backend_service" "libp2pws" {
     group = google_compute_instance_group.multiple.self_link
   }
 
-  health_checks = [google_compute_health_check.jsonrpc.self_link]
+  health_checks = [google_compute_health_check.rpc.self_link]
 }

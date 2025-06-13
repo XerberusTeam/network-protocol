@@ -1,61 +1,29 @@
-FROM rust:1.80.1-bookworm as builder
+FROM docker.io/paritytech/ci-unified:latest as builder
 
-ENV RUST_BACKTRACE 1
-ENV PROTOC=/usr/bin/protoc
+WORKDIR /polkadot
+COPY . /polkadot
 
-RUN apt-get update && \
-	DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-	build-essential \
-	clang \
-	libclang-dev \
-	libssl-dev \
-	protobuf-compiler \
-	ca-certificates && \
-	apt-get autoremove -y && \
-	apt-get clean && \
-	find /var/lib/apt/lists/ -type f -not -name lock -delete;
+RUN cargo fetch
+RUN cargo build --locked --release
 
-WORKDIR /usr/src
+FROM docker.io/parity/base-bin:latest
 
-ADD ./model_runtime/ ./model_runtime/
-ADD ./node/ ./node/
-ADD ./pallets/ ./pallets/
-ADD ./runtime/ ./runtime/
-ADD ./Cargo.toml ./Cargo.toml
-ADD ./Cargo.lock ./Cargo.lock
-ADD ./rust-toolchain.toml ./rust-toolchain.toml
-ADD ./rustfmt.toml ./rustfmt.toml
+COPY --from=builder /polkadot/target/release/solochain-template-node /usr/local/bin
 
-RUN cargo build --release
-
-ADD ./chain-spec.json ./chain-spec.json
-
-FROM debian:bookworm-slim
-
-RUN apt-get update && \
-	DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-	libssl3 \
-	ca-certificates && \
-	apt-get autoremove -y && \
-	apt-get clean && \
-	find /var/lib/apt/lists/ -type f -not -name lock -delete;
-
-RUN  useradd -m -u 1000 -U -s /bin/sh -d /polkadot polkadot && \
+USER root
+RUN useradd -m -u 1001 -U -s /bin/sh -d /polkadot polkadot && \
 	mkdir -p /data /polkadot/.local/share && \
 	chown -R polkadot:polkadot /data && \
-	ln -s /data /polkadot/.local/share/xerberus-net
+	ln -s /data /polkadot/.local/share/polkadot && \
+# unclutter and minimize the attack surface
+	rm -rf /usr/bin /usr/sbin
+
+# Copy the chain spec file after creating the user
+COPY --chown=polkadot:polkadot --chmod=774 chain-spec-raw.json /data/chain-spec-raw.json
 
 USER polkadot
 
-RUN mkdir -p /data
-RUN chown polkadot:polkadot /data
-RUN chmod 774 /data
+EXPOSE 30333 9933 9944 9615
+VOLUME ["/data"]
 
-COPY --chown=polkadot:polkadot --chmod=774 --from=builder /usr/src/target/release/ /usr/bin/
-COPY --chown=polkadot:polkadot --chmod=774 --from=builder /usr/src/chain-spec.json /data/chain-spec.json
-
-RUN /usr/bin/xerberus-net --version
-
-EXPOSE 9930 9333 9944 30333 30334 9615
-
-ENTRYPOINT ["/usr/bin/xerberus-net"]
+ENTRYPOINT ["/usr/local/bin/solochain-template-node"]

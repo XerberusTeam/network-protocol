@@ -1,13 +1,13 @@
 locals {
   env_file     = "./environments/${terraform.workspace}.yaml"
-  env_name     = terraform.workspace == "default" ? "prod" : terraform.workspace
-  env_contents = fileexists(local.env_file) ? file(local.env_file) : file("./environments/prod.yaml")
+  env_name     = terraform.workspace == "default" ? "testnet-v2" : terraform.workspace
+  env_contents = fileexists(local.env_file) ? file(local.env_file) : file("./environments/testnet-v2.yaml")
   settings     = yamldecode(local.env_contents)
   project_id   = local.settings.project_id
   region       = local.settings.region
   zone         = local.settings.zone
   prefix       = "${local.env_name}-explorer"
-  compute_name = "${local.prefix}-telemetry-web"
+  compute_name = "${local.prefix}-tlm-web"
   base_domain  = "explorer.xerberus.io"
 
   machine_type = "e2-standard-2"
@@ -17,7 +17,7 @@ locals {
   target_port = 8000
 
   domains = [
-    local.env_name == "prod" ? local.base_domain : "${local.env_name}-${local.base_domain}",
+    "${local.env_name}-${local.base_domain}",
   ]
 
   # Environment variables for the function

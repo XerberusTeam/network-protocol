@@ -1,0 +1,41 @@
+version: "3.9"
+
+volumes:
+  xerberus_nodes_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./xerberus-node/data
+
+services:
+  xerberus-light-node:
+    container_name: xerberus-light-node
+    image: ghcr.io/xerberusteam/xerberus-node-v2:full-node-latest
+    platform: linux/amd64
+    pull_policy: always
+    restart: unless-stopped
+    network_mode: host
+    command: |
+      --base-path /data/nodes/xerberus-light-node
+      --chain /data/chain-spec-raw.json
+      --rpc-external
+      --rpc-methods Unsafe
+      --rpc-cors all
+      --name your-xerberus-node
+      --bootnodes /dns/node-v2.xerberus.io/tcp/30333/ws/p2p/12D3KooWCYKbsQw2r5575MA8YqMhn8AqhVuZkfobPMyoKzEP595t/p2p/12D3KooWCYKbsQw2r5575MA8YqMhn8AqhVuZkfobPMyoKzEP595t
+      --rpc-port 9933
+      --port 30333
+      --prometheus-external
+      --allow-private-ip
+    environment:
+      - RUST_LOG=info,libp2p=debug,sub-libp2p=debug,sync=debug,gossip=debug,peerset=debug,network=debug,libp2p_identify=trace
+    volumes:
+      - xerberus_nodes_data:/data
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+        env: NODE=xerberus-light-node
+        tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'

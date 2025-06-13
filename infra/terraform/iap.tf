@@ -20,15 +20,16 @@ resource "google_iap_tunnel_instance_iam_binding" "instance_iam" {
 
   depends_on = [
     google_project_service.iap,
-    google_compute_instance.multiple[0]
+    google_compute_instance.multiple
   ]
 }
 
-resource "google_compute_project_metadata_item" "os_login" {
-  project = local.project_id
-  key     = "enable-oslogin"
-  value   = "TRUE"
-}
+# This metadata is already set in the project, so we'll skip managing it via Terraform
+# resource "google_compute_project_metadata_item" "os_login" {
+#   project = local.project_id
+#   key     = "enable-oslogin"
+#   value   = "TRUE"
+# }
 
 resource "google_project_iam_member" "os_login_users" {
   for_each = toset(formatlist("user:%s", distinct(concat(

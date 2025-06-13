@@ -1,0 +1,9 @@
+nvm install 20
+nvm use 20
+nvm alias default 20  # optional, makes v20 the default every time
+
+
+corepack enable
+corepack prepare yarn@3.1.1 --activate
+yarn install
+yarn start

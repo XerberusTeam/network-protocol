@@ -24,13 +24,22 @@ while [[ "$#" -gt 0 ]]; do
     shift
 done
 
-VERSION=$(grep '^version\s*=' $CWD/node/Cargo.toml | sed 's/^version\s*=\s*//; s/^"//; s/"$//; s/^'"'"'//; s/'"'"'$//')
+VERSION=$(grep 'version\s*=' "$CWD/node/Cargo.toml" | head -1 | cut -d '"' -f2)
 VERSION_LABEL="full-node-$VERSION"
-VERSION_TAG="ghcr.io/$NAMESPACE/xerberus-node:$VERSION_LABEL"
+VERSION_TAG="ghcr.io/$NAMESPACE/xerberus-node-v2:$VERSION_LABEL"
 LATEST_LABEL="full-node-latest"
-LATEST_TAG="ghcr.io/$NAMESPACE/xerberus-node:$LATEST_LABEL"
+LATEST_TAG="ghcr.io/$NAMESPACE/xerberus-node-v2:$LATEST_LABEL"
 
-echo publishing "$VERSION_TAG"
+echo "Publishing Docker images to GitHub Container Registry"
+echo "Version tag: $VERSION_TAG"
+echo "Latest tag: $LATEST_TAG"
+
+echo "Publishing $VERSION_TAG"
 docker push "$VERSION_TAG"
-echo publishing "$LATEST_TAG"
+
+echo "Publishing $LATEST_TAG"
 docker push "$LATEST_TAG"
+
+echo "Done! Images have been successfully published." 
+
+# chmod +x scripts/publish.sh 

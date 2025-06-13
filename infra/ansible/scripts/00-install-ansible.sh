@@ -8,8 +8,12 @@ ADDITIONAL_OPTS="--break-system-packages"
 # fi
 
 if ! command -v pip &> /dev/null; then
-    sudo apt-get update
-    sudo apt-get install -y python3-pip
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        brew install python3
+    else
+        sudo apt-get update
+        sudo apt-get install -y python3-pip
+    fi
 fi
 
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
@@ -28,8 +32,12 @@ if ! command -v pipx &> /dev/null; then
     python3 -m pipx ensurepath
 fi
 
-sudo apt-get update
-sudo apt install -y ansible-core
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    brew install ansible
+else
+    sudo apt-get update
+    sudo apt install -y ansible-core
+fi
 
 python3 -m pipx install ansible
 python3 -m pipx install ansible-core

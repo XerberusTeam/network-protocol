@@ -20,7 +20,7 @@ import { Column } from './components/List';
 
 export const PINNED_CHAINS = {
   // Xerberus - testnet
-  '0x01e5d426a4d964d2708a2114569d38fb05c6ff0694b2bb005b7328fa13e36d5c': 0,
+  '0xdd6af78fffa05154db4b00b67bc5693af682ce5b4f2c6a26f6fdb31b0147cb2d': 0,
 };
 
 export function comparePinnedChains(a: string, b: string) {

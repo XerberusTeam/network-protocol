@@ -47,6 +47,9 @@ output_ssh:
 output_scp:
 	terraform -chdir=terraform/ output iap_scp_command
 
+output_scripts_scp:
+	terraform -chdir=terraform/ output scripts_scp_command
+
 ansible_provision: make_rsync trigger_docker_pull trigger_ansible
 
 make_rsync:

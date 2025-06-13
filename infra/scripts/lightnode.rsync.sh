@@ -4,8 +4,14 @@ set -e
 
 CWD="$(cd "$(dirname "$0")"/.. && pwd)"
 
-$CWD/scripts/ssh.sh rm -rf ./ansible
+# Clean ansible directory on VM and copy it
+$CWD/scripts/lightnode.ssh.sh rm -rf ./ansible
 
-CMD_STR=$(terraform -chdir=$CWD/terraform/ output iap_lightnode_scp_command)
-eval CMD=$CMD_STR
-exec $CMD
+# Use -raw flag to avoid issues with quotes
+terraform -chdir=$CWD/terraform/ output -raw iap_lightnode_scp_command | bash
+
+# Clean scripts directory on VM and copy it
+$CWD/scripts/lightnode.ssh.sh rm -rf ./scripts
+
+# Use -raw flag to avoid issues with quotes
+terraform -chdir=$CWD/terraform/ output -raw lightnode_scripts_scp_command | bash

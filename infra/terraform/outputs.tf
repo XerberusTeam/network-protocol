@@ -48,14 +48,14 @@ output "iap_tunnel_command" {
   value       = "gcloud compute ssh --zone ${local.zone} ${google_compute_instance.multiple[0].name} --tunnel-through-iap --project ${local.project_id}"
 }
 
-output "iap_scp_command" {
-  description = "Command to SCP Ansible into the instance using IAP tunneling"
-  value       = "gcloud compute scp --compress --zone ${local.zone} --tunnel-through-iap --project ${local.project_id} --recurse ./ansible ${google_compute_instance.multiple[0].name}:~/ansible"
-}
-
 output "iap_lightnode_tunnel_command" {
   description = "Command to SSH into the lightnode instance using IAP tunneling"
   value       = "gcloud compute ssh --zone ${local.zone} ${google_compute_instance.lightnodes[0].name} --tunnel-through-iap --project ${local.project_id}"
+}
+
+output "iap_scp_command" {
+  description = "Command to SCP Ansible into the instance using IAP tunneling"
+  value       = "gcloud compute scp --compress --zone ${local.zone} --tunnel-through-iap --project ${local.project_id} --recurse ./ansible ${google_compute_instance.multiple[0].name}:~/ansible"
 }
 
 output "iap_lightnode_scp_command" {
@@ -65,7 +65,7 @@ output "iap_lightnode_scp_command" {
 
 output "os_login_enabled" {
   description = "Indicates whether OS Login is enabled"
-  value       = google_compute_project_metadata_item.os_login.value
+  value       = "TRUE" # Hardcoded since we're not managing this via Terraform, is already set on your GCP project
 }
 
 output "firewall_rule_name" {
@@ -84,9 +84,19 @@ output "polkadot_lightnode_public_ips" {
 }
 
 output "load_balancer_ip" {
-  value = google_compute_global_address.jsonrpc.address
+  value = google_compute_global_address.rpc.address
 }
 
-output "jsonrpc_url" {
-  value = "wss://${google_compute_managed_ssl_certificate.jsonrpc.managed[0].domains[0]}"
+output "rpc_url" {
+  value = "wss://${google_compute_managed_ssl_certificate.ssl_cert.managed[0].domains[0]}"
+}
+
+output "scripts_scp_command" {
+  description = "Command to SCP scripts directory into the instance using IAP tunneling"
+  value       = "gcloud compute scp --compress --zone ${local.zone} --tunnel-through-iap --project ${local.project_id} --recurse ../scripts ${google_compute_instance.multiple[0].name}:~/scripts"
+}
+
+output "lightnode_scripts_scp_command" {
+  description = "Command to SCP scripts directory into the lightnode instance using IAP tunneling"
+  value       = "gcloud compute scp --compress --zone ${local.zone} --tunnel-through-iap --project ${local.project_id} --recurse ../scripts ${google_compute_instance.lightnodes[0].name}:~/scripts"
 }

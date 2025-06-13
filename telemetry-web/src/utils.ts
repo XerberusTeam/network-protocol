@@ -94,7 +94,7 @@ export interface HashData {
 export function getHashData(): HashData {
   const { hash } = window.location;
   const chain =
-    '0x01e5d426a4d964d2708a2114569d38fb05c6ff0694b2bb005b7328fa13e36d5c' as Types.GenesisHash;
+    '0xdd6af78fffa05154db4b00b67bc5693af682ce5b4f2c6a26f6fdb31b0147cb2d' as Types.GenesisHash;
 
   if (hash[0] !== '#') {
     return { chain };
@@ -111,7 +111,7 @@ export function setHashData(val: HashData) {
 
   const {
     tab = '',
-    chain = '0x01e5d426a4d964d2708a2114569d38fb05c6ff0694b2bb005b7328fa13e36d5c',
+    chain = '0xdd6af78fffa05154db4b00b67bc5693af682ce5b4f2c6a26f6fdb31b0147cb2d',
   } = update;
 
   window.location.hash = `#${tab}/${encodeURIComponent(chain)}`;

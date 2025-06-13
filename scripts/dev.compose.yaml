@@ -1,0 +1,30 @@
+version: "3.8"
+
+services:
+  dev:
+    image: xerberus-node-v2:latest
+    container_name: local-dev
+    volumes:
+      - ../local-chain-state/data/dev:/data/dev
+    ports:
+      - "30333:30333"  # P2P port
+      - "9934:9933"    # HTTP RPC
+      - "9944:9944"    # WebSocket
+    environment:
+      RUST_LOG: "runtime=debug,parachain=trace,cumulus-collator=trace,aura=debug,substrate=debug"
+    command:
+      - "--dev"
+      - "--base-path=/data/dev"
+      - "--port=30333"
+      - "--rpc-port=9933"
+      - "--rpc-external"
+      - "--rpc-methods=Unsafe"
+      - "--rpc-cors=all"
+      - "--name=LocalDev"
+      - "--allow-private-ip"
+      - "--no-telemetry"
+      - "--no-prometheus"
+      - "--detailed-log-output"
+
+# docker compose -f scripts/dev.compose.yaml up -d
+# docker compose -f scripts/dev.compose.yaml down 
