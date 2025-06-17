@@ -21,3 +21,5 @@ override.tf.json
 
 # Keep the lock file in version control
 !.terraform.lock.hcl
+
+pallets/risk-ratings/client/node_modules/
