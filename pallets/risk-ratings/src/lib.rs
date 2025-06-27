@@ -16,7 +16,6 @@ pub mod pallet {
     use super::*;
     use frame_support::pallet_prelude::*;
     use frame_system::pallet_prelude::*;
-    use sp_runtime::traits::SaturatedConversion;
     use sp_std::prelude::*;
 
     /// Single risk score entry
@@ -73,6 +72,7 @@ pub mod pallet {
             origin: OriginFor<T>,
             partition: Vec<u8>,
             score: u32,
+            timestamp: u32,
         ) -> DispatchResult {
             let who = ensure_signed(origin)?;
 
@@ -82,7 +82,7 @@ pub mod pallet {
 
             let score_entry = ScoreEntry {
                 score,
-                timestamp: frame_system::Pallet::<T>::block_number().saturated_into::<u32>(),
+                timestamp,
             };
 
             PartitionScores::<T>::try_mutate(&bounded_partition, |scores_opt| -> DispatchResult {
@@ -104,7 +104,7 @@ pub mod pallet {
             Self::deposit_event(Event::ScoreUpdated {
                 partition: bounded_partition,
                 score,
-                timestamp: frame_system::Pallet::<T>::block_number().saturated_into::<u32>(),
+                timestamp,
                 updater: who,
             });
 

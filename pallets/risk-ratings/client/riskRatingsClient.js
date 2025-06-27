@@ -72,9 +72,10 @@ class RiskRatingsClient {
      * @param {KeyringPair} account - Account to sign the transaction
      * @param {string} partition - Partition name (e.g., 'test', 'prod')
      * @param {number} score - Risk score value
+     * @param {number} timestamp - Unix timestamp
      * @returns {Promise<string>} Transaction hash
      */
-    async updateScore(account, partition, score) {
+    async updateScore(account, partition, score, timestamp) {
         if (!this.api) {
             throw new Error('Client not initialized. Call initialize() first.');
         }
@@ -84,7 +85,7 @@ class RiskRatingsClient {
 
         try {
             // Create the extrinsic - Polkadot.js will handle the Vec<u8> conversion
-            const extrinsic = this.api.tx.riskRatings.updateScore(partition, score);
+            const extrinsic = this.api.tx.riskRatings.updateScore(partition, score, timestamp);
             
             // Get estimated fee
             const info = await extrinsic.paymentInfo(account);

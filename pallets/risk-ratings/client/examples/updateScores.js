@@ -36,8 +36,12 @@ async function updateScoresExample() {
         
         for (const update of scoreUpdates) {
             try {
-                const txHash = await client.updateScore(alice, update.partition, update.score);
-                console.log(`✅ Transaction hash: ${txHash}`);
+                // Generate current Unix timestamp (in seconds)
+                const timestamp = Math.floor(Date.now() / 1000);
+                
+                const txHash = await client.updateScore(alice, update.partition, update.score, timestamp);
+                console.log(`✅ Updated ${update.partition} with score ${update.score} at timestamp ${timestamp}`);
+                console.log(`   Transaction hash: ${txHash}`);
                 
                 // Wait a bit between transactions to avoid nonce issues
                 console.log('⏳ Waiting 6 seconds before next transaction...');
