@@ -1,23 +1,20 @@
 //! Runtime API for the Risk Ratings pallet.
 //!
-//! This module defines the runtime API that enables RPC calls to query
-//! risk rating data from external clients.
+//! Provides RPC methods for querying risk rating data using deterministic i128 types.
+//! Follows the same pattern as other Substrate runtime APIs for consistency.
 
 use sp_api::decl_runtime_apis;
 use sp_std::prelude::*;
 use crate::ScoreEntry;
 
 decl_runtime_apis! {
-    /// Runtime API for the Risk Ratings pallet.
-    ///
-    /// This API provides methods for querying risk rating data via RPC calls.
-    /// It's designed to be simple and efficient for production use.
+    /// Runtime API for querying risk rating data via RPC
     pub trait RiskRatingApi {
-        /// Returns a greeting message for testing
+        /// Returns a greeting message for testing pallet integration
         fn say_hello() -> Vec<u8>;
 
-        /// Get score entries for a specific partition
-        /// Returns real data if partition exists, otherwise returns dummy data for debugging
+        /// Get score entries for a partition (returns empty vector if none exist)
+        /// Uses i128 for deterministic consensus - same as pallet-balances, pallet-staking
         fn get_scores(partition: Vec<u8>) -> Vec<ScoreEntry>;
     }
 }

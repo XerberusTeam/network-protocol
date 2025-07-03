@@ -26,7 +26,7 @@ async function fullDemo() {
         
         // Check initial state
         console.log('\n📊 Checking initial partition states...');
-        const testPartitions = ['demo_test', 'demo_prod'];
+        const testPartitions = ['demo_test', 'demo_prod', 'demo_negative'];
         
         for (const partition of testPartitions) {
             const initialScores = await client.getScores(partition);
@@ -35,19 +35,25 @@ async function fullDemo() {
         
         console.log('\n=== Phase 2: Update Scores ===');
         
-        // Update scores for demo partitions
+        // Update scores for demo partitions using string format
         const updates = [
-            { partition: 'demo_test', score: 75 },
-            { partition: 'demo_test', score: 82 },  // Second update to same partition
-            { partition: 'demo_prod', score: 95 },
+            { partition: 'demo_test', score: '75.5' },
+            { partition: 'demo_test', score: '82.123' },  // Second update to same partition
+            { partition: 'demo_prod', score: '95.0' },
+            { partition: 'demo_negative', score: '-25.75' },  // Negative score
+            { partition: 'demo_negative', score: '-100.001' }, // Another negative score
         ];
         
         for (const update of updates) {
             console.log(`\n🔄 Updating ${update.partition} with score ${update.score}...`);
             
             try {
-                const txHash = await client.updateScore(alice, update.partition, update.score);
+                // Generate current Unix timestamp (in seconds)
+                const timestamp = Math.floor(Date.now() / 1000);
+                
+                const txHash = await client.updateScore(alice, update.partition, update.score, timestamp);
                 console.log(`✅ Success! Transaction: ${txHash}`);
+                console.log(`   Timestamp: ${timestamp}`);
                 
                 // Wait for block finalization
                 console.log('⏳ Waiting 8 seconds for block finalization...');

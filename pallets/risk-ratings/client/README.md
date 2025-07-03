@@ -11,6 +11,21 @@ A comprehensive JavaScript client for interacting with the Risk Ratings Substrat
 - ✅ **Event Processing**: Monitor transaction events and status
 - ✅ **Error Handling**: Comprehensive error reporting and handling
 
+## Why i128 Instead of Floating-Point?
+
+**Floating-point types (f32/f64) are incompatible with blockchain consensus:**
+
+- Different CPUs produce different results (Intel vs AMD vs ARM) breaking consensus
+- SCALE codec intentionally excludes floating-point to prevent non-deterministic serialization
+- IEEE 754 rounding inconsistencies cause validator nodes to diverge
+
+**i128 is the industry standard across all blockchain ecosystems:**
+
+- Substrate: pallet-balances, pallet-staking, pallet-democracy all use fixed-point types
+- Ethereum: Uses uint256 scaled by 10^18 (wei) - no native floating-point
+- DeFi: Uniswap, Compound, Aave all use fixed-point math for price/rate calculations
+- Provides 18 decimal precision when scaled by 10^18, deterministic results, and SCALE codec support
+
 ## Prerequisites
 
 - Node.js 16+ with ES modules support
@@ -34,6 +49,7 @@ npm run demo
 ```
 
 This runs a complete demonstration that:
+
 1. Tests RPC connectivity
 2. Submits score updates via signed extrinsics
 3. Queries and verifies the results
@@ -60,27 +76,44 @@ Demonstrates querying scores via RPC calls and manual hex decoding.
 ### Basic Client Usage
 
 ```javascript
-import RiskRatingsClient from './riskRatingsClient.js';
+import RiskRatingsClient from "./riskRatingsClient.js";
 
 const client = new RiskRatingsClient();
 await client.initialize();
 
 // Create account for signing
-const alice = client.createAccount('//Alice');
+const alice = client.createAccount("//Alice");
 
-// Update a score
-const txHash = await client.updateScore(alice, 'production', 95);
-console.log('Transaction hash:', txHash);
+// Update a score (client converts decimal string to i128)
+const txHash = await client.updateScore(
+  alice,
+  "production",
+  "-8.5",
+  Date.now() / 1000
+);
+console.log("Transaction hash:", txHash);
 
 // Query scores
-const scores = await client.getScores('production');
-console.log('Scores:', scores);
+const scores = await client.getScores("production");
+console.log("Scores:", scores);
 
 // Test RPC
 const message = await client.sayHello();
-console.log('Hello message:', message);
+console.log("Hello message:", message);
 
 await client.disconnect();
+```
+
+### Score Format Examples
+
+The client accepts decimal strings and converts them to i128 scaled by 10^18:
+
+```javascript
+// Valid score formats:
+await client.updateScore(alice, "test", "-8.5", timestamp); // Negative decimal
+await client.updateScore(alice, "test", "33333333", timestamp); // Large integer
+await client.updateScore(alice, "test", "100.123456", timestamp); // Decimal with precision
+await client.updateScore(alice, "test", "0", timestamp); // Zero
 ```
 
 ### Manual RPC Calls with curl
@@ -119,15 +152,16 @@ When making manual RPC calls, partition names need to be SCALE-encoded:
 ### RiskRatingsClient
 
 #### Constructor
+
 ```javascript
-new RiskRatingsClient(nodeUrl = 'ws://127.0.0.1:9944')
+new RiskRatingsClient((nodeUrl = "ws://127.0.0.1:9944"));
 ```
 
 #### Methods
 
 - `async initialize()` - Connect to the node and initialize the client
 - `createAccount(seed)` - Create/import an account for signing transactions
-- `async updateScore(account, partition, score)` - Submit signed extrinsic to update score
+- `async updateScore(account, partition, score, timestamp)` - Submit signed extrinsic to update score
 - `async sayHello()` - Call the say_hello RPC method
 - `async getScores(partition)` - Query scores for a partition via RPC
 - `decodeHexResponse(hexResponse)` - Manually decode SCALE-encoded hex responses
@@ -151,28 +185,34 @@ new RiskRatingsClient(nodeUrl = 'ws://127.0.0.1:9944')
 This client is designed to work with a Substrate runtime that includes the Risk Ratings pallet with:
 
 ### Extrinsics
-- `riskRatings.updateScore(partition: Vec<u8>, score: u32)` - Update risk score
+
+- `riskRatings.updateScore(partition: Vec<u8>, score: i128, timestamp: u64)` - Update risk score
 
 ### RPC Methods
+
 - `RiskRatingApi_say_hello()` - Returns greeting message
 - `RiskRatingApi_get_scores(partition: String)` - Returns scores for partition
 
 ### Events
+
 - `riskRatings.ScoreUpdated` - Emitted when a score is updated
 
 ## Troubleshooting
 
 ### Connection Issues
+
 - Ensure your Substrate node is running on `ws://127.0.0.1:9944`
 - Check that the Risk Ratings pallet is included in your runtime
 - Verify the runtime APIs are properly implemented
 
 ### Transaction Failures
+
 - Check account balance (ensure sufficient funds for transaction fees)
 - Verify the partition name length (max 100 bytes)
 - Ensure the pallet hasn't reached the maximum scores limit (1000 per partition)
 
 ### RPC Errors
+
 - Verify the runtime API methods are properly exposed
 - Check that the method names match exactly: `RiskRatingApi_say_hello`, `RiskRatingApi_get_scores`
 - Ensure proper SCALE encoding for string parameters

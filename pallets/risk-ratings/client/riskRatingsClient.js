@@ -6,10 +6,13 @@ import { cryptoWaitReady } from '@polkadot/util-crypto';
 /**
  * Risk Ratings Pallet Client
  * 
- * Provides methods to interact with the Risk Ratings pallet:
- * - Submit signed extrinsics to update scores
- * - Query scores via RPC calls
- * - Decode SCALE-encoded responses
+ * Provides methods to interact with the Risk Ratings pallet using i128
+ * for deterministic consensus and 18-decimal precision.
+ * 
+ * **Why i128?** Floating-point types break blockchain consensus due to
+ * hardware-dependent results and SCALE codec incompatibility. i128 provides
+ * deterministic 18-decimal precision when scaled by 10^18, following the same
+ * pattern as pallet-balances, pallet-staking, and all major DeFi protocols.
  */
 class RiskRatingsClient {
     constructor(nodeUrl = 'ws://127.0.0.1:9944') {
@@ -68,11 +71,63 @@ class RiskRatingsClient {
     }
 
     /**
+     * Convert decimal string to i128 scaled by 10^18
+     * @param {string} decimalString - Decimal string (e.g., "-8.5", "33333333")
+     * @returns {string} i128 value as string
+     */
+    decimalToI128(decimalString) {
+        const decimal = parseFloat(decimalString);
+        if (isNaN(decimal)) {
+            throw new Error(`Invalid decimal: ${decimalString}`);
+        }
+        
+        // Use BigInt for precise calculations to avoid scientific notation
+        const scale = BigInt(10) ** BigInt(18);
+        
+        // Convert to string to handle large numbers without scientific notation
+        const decimalStr = decimal.toString();
+        
+        // Handle negative numbers
+        const isNegative = decimalStr.startsWith('-');
+        const absDecimalStr = isNegative ? decimalStr.slice(1) : decimalStr;
+        
+        // Split into integer and decimal parts
+        const parts = absDecimalStr.split('.');
+        const integerPart = parts[0] || '0';
+        const decimalPart = parts[1] || '0';
+        
+        // Pad decimal part to 18 digits
+        const paddedDecimal = decimalPart.padEnd(18, '0').slice(0, 18);
+        
+        // Combine integer and decimal parts
+        const fullNumber = integerPart + paddedDecimal;
+        
+        // Convert to BigInt and apply scaling
+        const scaled = BigInt(fullNumber);
+        
+        // Apply sign
+        const result = isNegative ? -scaled : scaled;
+        
+        return result.toString();
+    }
+
+    /**
+     * Convert i128 scaled value back to decimal string
+     * @param {string|number} i128Value - i128 value (scaled by 10^18)
+     * @returns {string} Decimal string
+     */
+    i128ToDecimal(i128Value) {
+        const scaled = BigInt(i128Value.toString());
+        const decimal = Number(scaled) / Math.pow(10, 18);
+        return decimal.toString();
+    }
+
+    /**
      * Submit a signed extrinsic to update a risk score
      * @param {KeyringPair} account - Account to sign the transaction
      * @param {string} partition - Partition name (e.g., 'test', 'prod')
-     * @param {number} score - Risk score value
-     * @param {number} timestamp - Unix timestamp
+     * @param {string|number} score - Risk score as decimal string (e.g., "-8.5", "33333333", "100.123456")
+     * @param {number} timestamp - Unix timestamp (u64)
      * @returns {Promise<string>} Transaction hash
      */
     async updateScore(account, partition, score, timestamp) {
@@ -84,8 +139,12 @@ class RiskRatingsClient {
         console.log(`   Using account: ${account.address}`);
 
         try {
-            // Create the extrinsic - Polkadot.js will handle the Vec<u8> conversion
-            const extrinsic = this.api.tx.riskRatings.updateScore(partition, score, timestamp);
+            // ✅ Convert decimal string to i128 scaled by 10^18
+            const i128Score = this.decimalToI128(score);
+            console.log(`🔢 Converting "${score}" to i128: ${i128Score}`);
+            
+            // Create the extrinsic - pallet expects i128 directly
+            const extrinsic = this.api.tx.riskRatings.updateScore(partition, i128Score, timestamp);
             
             // Get estimated fee
             const info = await extrinsic.paymentInfo(account);
@@ -109,11 +168,13 @@ class RiskRatingsClient {
                             console.log(`📋 Event: ${event.section}.${event.method}`);
                             
                             if (event.section === 'riskRatings' && event.method === 'ScoreUpdated') {
-                                const [partition, score, timestamp, updater] = event.data;
+                                const [partition, scoreI128, timestamp, updater] = event.data;
+                                // Convert i128 back to decimal for display
+                                const scoreDecimal = this.i128ToDecimal(scoreI128);
                                 console.log(`🎯 Score updated successfully!`);
                                 console.log(`   Partition: ${new TextDecoder().decode(partition)}`);
-                                console.log(`   Score: ${score}`);
-                                console.log(`   Timestamp: ${timestamp}`);
+                                console.log(`   Score: ${scoreDecimal} (i128: ${scoreI128.toString()})`);
+                                console.log(`   Timestamp: ${timestamp.toString()}`);
                                 console.log(`   Updater: ${updater}`);
                                 success = true;
                             }
@@ -182,7 +243,7 @@ class RiskRatingsClient {
     /**
      * Get scores for a specific partition via RPC
      * @param {string} partition - Partition name to query
-     * @returns {Promise<Array>} Array of score entries
+     * @returns {Promise<Array>} Array of score entries with decimal scores
      */
     async getScores(partition) {
         if (!this.api) {
@@ -207,21 +268,28 @@ class RiskRatingsClient {
             const result = await this.api.rpc.state.call('RiskRatingApi_get_scores', encodedHex);
             console.log(`📦 Raw result: ${result}`);
 
-            // Define ScoreEntry structure and decode
+            // Define ScoreEntry structure with i128
             const ScoreEntry = Struct.with({
-                score: u32,
-                timestamp: u32
+                score: 'i128', // Use native i128 type
+                timestamp: 'u64'
             });
 
             const VecScoreEntry = Vec.with(ScoreEntry);
             const decoded = new VecScoreEntry(this.api.registry, result);
-            const scores = decoded.toJSON();
+            
+            // Convert to JSON and then to decimal format
+            const rawScores = decoded.toJSON();
+            const scores = rawScores.map(entry => ({
+                score: this.i128ToDecimal(entry.score),
+                scoreI128: entry.score,
+                timestamp: entry.timestamp
+            }));
 
             console.log(`📈 Scores for "${partition}":`, scores);
 
             if (scores.length > 0) {
-                decoded.forEach((entry, index) => {
-                    console.log(`   Entry ${index}: score=${entry.score.toNumber()}, timestamp=${entry.timestamp.toNumber()}`);
+                scores.forEach((entry, index) => {
+                    console.log(`   Entry ${index}: score=${entry.score}, timestamp=${entry.timestamp}`);
                 });
             } else {
                 console.log(`   No scores found for "${partition}"`);
@@ -237,7 +305,7 @@ class RiskRatingsClient {
     /**
      * Decode a hex-encoded SCALE response manually
      * @param {string} hexResponse - Hex-encoded response (e.g., "0x040a0000000c000000")
-     * @returns {Array} Decoded score entries
+     * @returns {Array} Decoded score entries with decimal scores
      */
     decodeHexResponse(hexResponse) {
         if (!this.api) {
@@ -247,20 +315,27 @@ class RiskRatingsClient {
         console.log(`\n🔍 Decoding hex response: ${hexResponse}`);
         
         try {
-            // Define ScoreEntry structure
+            // Define ScoreEntry structure with i128
             const ScoreEntry = Struct.with({
-                score: u32,
-                timestamp: u32
+                score: 'i128', // Use native i128 type
+                timestamp: 'u64'
             });
             
             // Create Vec type and decode
             const VecScoreEntry = Vec.with(ScoreEntry);
             const decoded = new VecScoreEntry(this.api.registry, hexResponse);
-            const scores = decoded.toJSON();
+            
+            // Convert to JSON and then to decimal format
+            const rawScores = decoded.toJSON();
+            const scores = rawScores.map(entry => ({
+                score: this.i128ToDecimal(entry.score),
+                scoreI128: entry.score,
+                timestamp: entry.timestamp
+            }));
             
             console.log('📊 Decoded scores:', scores);
-            decoded.forEach((entry, index) => {
-                console.log(`   Entry ${index}: score=${entry.score.toNumber()}, timestamp=${entry.timestamp.toNumber()}`);
+            scores.forEach((entry, index) => {
+                console.log(`   Entry ${index}: score=${entry.score}, timestamp=${entry.timestamp}`);
             });
             
             return scores;
